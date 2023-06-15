@@ -14,10 +14,10 @@ using Puerts.TypeMapping;
 
 namespace Puerts.Editor
 {
-    namespace Generator
-    {
-        namespace DTS
-        {
+    namespace Generator {
+
+        namespace DTS {
+
             public class TsNamespaceGenInfo
             {
                 public string Name;
@@ -31,30 +31,26 @@ namespace Puerts.Editor
                 public string TypeName;
                 public bool IsParams;
                 public bool IsOptional;
-
                 public override bool Equals(object obj)
                 {
                     if (obj != null)
                     {
                         TsParameterGenInfo info = (TsParameterGenInfo)obj as TsParameterGenInfo;
-                        if (info != null)
+                        if (info != null) 
                         {
                             return this.Name == info.Name &&
-                                   this.TypeName == info.TypeName &&
-                                   this.IsByRef == info.IsByRef &&
-                                   this.IsParams == info.IsParams &&
-                                   this.IsOptional == info.IsOptional;
+                                this.TypeName == info.TypeName &&
+                                this.IsByRef == info.IsByRef &&
+                                this.IsParams == info.IsParams &&
+                                this.IsOptional == info.IsOptional;
                         }
                     }
-
                     return base.Equals(obj);
                 }
-
                 public override int GetHashCode()
                 {
                     return base.GetHashCode();
                 }
-
                 public override string ToString()
                 {
                     return base.ToString();
@@ -72,19 +68,14 @@ namespace Puerts.Editor
                         IsOptional = parameterInfo.IsOptional
                     };
                 }
+
             }
 
             public class TsMethodGenInfoComparer : IEqualityComparer<TsMethodGenInfo>
             {
-                public bool Equals(TsMethodGenInfo x, TsMethodGenInfo y)
-                {
-                    return x.Equals(y);
-                }
+                public bool Equals(TsMethodGenInfo x, TsMethodGenInfo y) { return x.Equals(y); }
 
-                public int GetHashCode(TsMethodGenInfo obj)
-                {
-                    return 0;
-                }
+                public int GetHashCode(TsMethodGenInfo obj) { return 0; }
             }
 
             public class TsMethodGenInfo
@@ -95,13 +86,12 @@ namespace Puerts.Editor
                 public string TypeName;
                 public bool IsConstructor;
                 public bool IsStatic;
-
                 public override bool Equals(object obj)
                 {
                     if (obj != null)
                     {
                         TsMethodGenInfo info = obj as TsMethodGenInfo;
-                        if (info != null)
+                        if (info != null) 
                         {
                             if (this.ParameterInfos.Length != info.ParameterInfos.Length ||
                                 this.Name != info.Name ||
@@ -117,19 +107,15 @@ namespace Puerts.Editor
                                 if (!this.ParameterInfos[i].Equals(info.ParameterInfos[i]))
                                     return false;
                             }
-
                             return true;
                         }
                     }
-
                     return base.Equals(obj);
                 }
-
                 public override int GetHashCode()
                 {
                     return base.GetHashCode();
                 }
-
                 public override string ToString()
                 {
                     return base.ToString();
@@ -193,7 +179,6 @@ namespace Puerts.Editor
                             IsStatic = false,
                         }));
                     }
-
                     if (getBaseMethods)
                     {
                         TsTypeGenInfo taregtInfo;
@@ -201,7 +186,6 @@ namespace Puerts.Editor
                         {
                             result.AddRange(TsMethodGenInfo.FromTsGenTypeInfos(tsGenTypeInfos, taregtInfo, true));
                         }
-
                         if (info.IsInterface && info.interfaces != null)
                         {
                             foreach (var iface in info.interfaces)
@@ -211,7 +195,6 @@ namespace Puerts.Editor
                             }
                         }
                     }
-
                     return result.Distinct(new TsMethodGenInfoComparer()).ToArray();
                 }
             }
@@ -238,7 +221,6 @@ namespace Puerts.Editor
                         {
                             result.AddRange(TsPropertyGenInfo.FromTsTypeGenInfo(tsGenTypeInfos, taregtInfo, true));
                         }
-
                         if (info.IsInterface && info.interfaces != null)
                         {
                             foreach (var iface in info.interfaces)
@@ -248,7 +230,6 @@ namespace Puerts.Editor
                             }
                         }
                     }
-
                     return result.Distinct().ToArray();
                 }
             }
@@ -272,7 +253,6 @@ namespace Puerts.Editor
                 public string EnumKeyValues;
                 public TsMethodGenInfo[] ExtensionMethods;
                 public bool IsCheckOk = false;
-
                 public string FullName
                 {
                     get
@@ -291,33 +271,31 @@ namespace Puerts.Editor
                         Name = type.Name.Replace('`', '$'),
                         Document = DocResolver.GetTsDocument(type),
                         Methods = genTypeSet.Contains(type) ? TsMethodGenInfo.FromType(type, genTypeSet) : new TsMethodGenInfo[] { },
-                        Properties = genTypeSet.Contains(type)
-                            ? type.GetFields(Utils.Flags)
+                        Properties = genTypeSet.Contains(type) ? type.GetFields(Utils.Flags)
+                            .Where(m => !Utils.IsNotSupportedMember(m, true))
+                            .Where(m => Utils.getBindingMode(m) != BindingMode.DontBinding)
+                            .Select(f => new TsPropertyGenInfo()
+                            {
+                                Name = f.Name,
+                                Document = DocResolver.GetTsDocument(f),
+                                TypeName = Utils.GetTsTypeName(f.FieldType),
+                                IsStatic = f.IsStatic
+                            })
+                            .Concat(
+                                type.GetProperties(Utils.Flags).Where(m => m.Name != "Item")
                                 .Where(m => !Utils.IsNotSupportedMember(m, true))
                                 .Where(m => Utils.getBindingMode(m) != BindingMode.DontBinding)
-                                .Select(f => new TsPropertyGenInfo()
+                                .Select(p => new TsPropertyGenInfo()
                                 {
-                                    Name = f.Name,
-                                    Document = DocResolver.GetTsDocument(f),
-                                    TypeName = Utils.GetTsTypeName(f.FieldType),
-                                    IsStatic = f.IsStatic
+                                    Name = p.Name,
+                                    Document = DocResolver.GetTsDocument(p),
+                                    TypeName = Utils.GetTsTypeName(p.PropertyType),
+                                    IsStatic = Utils.IsStatic(p),
+                                    HasGetter = p.GetGetMethod() != null && p.GetGetMethod().IsPublic,
+                                    HasSetter = p.GetSetMethod() != null && p.GetSetMethod().IsPublic
                                 })
-                                .Concat(
-                                    type.GetProperties(Utils.Flags).Where(m => m.Name != "Item")
-                                        .Where(m => !Utils.IsNotSupportedMember(m, true))
-                                        .Where(m => Utils.getBindingMode(m) != BindingMode.DontBinding)
-                                        .Select(p => new TsPropertyGenInfo()
-                                        {
-                                            Name = p.Name,
-                                            Document = DocResolver.GetTsDocument(p),
-                                            TypeName = Utils.GetTsTypeName(p.PropertyType),
-                                            IsStatic = Utils.IsStatic(p),
-                                            HasGetter = p.GetGetMethod() != null && p.GetGetMethod().IsPublic,
-                                            HasSetter = p.GetSetMethod() != null && p.GetSetMethod().IsPublic
-                                        })
-                                )
-                                .ToArray()
-                            : new TsPropertyGenInfo[] { },
+                            )
+                            .ToArray() : new TsPropertyGenInfo[] { },
                         IsGenericTypeDefinition = type.IsGenericTypeDefinition,
                         IsDelegate = (Utils.IsDelegate(type) && type != typeof(Delegate)),
                         IsInterface = type.IsInterface,
@@ -339,16 +317,16 @@ namespace Puerts.Editor
                         {
                             result.DelegateDef = "(...args:any[]) => any";
                         }
-
+                        
                         else
                         {
                             var m = type.GetMethod("Invoke");
-                            if (Utils.IsNotSupportedMember(m))
+                            if (Utils.IsNotSupportedMember(m)) 
                             {
                                 // 该情况下不支持调用，但为了dts里别的地方引用该delegate的时候不报错，生成一个空白class
                                 result.IsDelegate = false;
-                            }
-                            else
+                            } 
+                            else 
                             {
                                 var tsFuncDef = "(" + string.Join(", ", m.GetParameters().Select(p => p.Name + ": " + Utils.GetTsTypeName(p.ParameterType)).ToArray()) + ") => " + Utils.GetTsTypeName(m.ReturnType);
                                 result.DelegateDef = tsFuncDef;
@@ -374,7 +352,6 @@ namespace Puerts.Editor
                             {
                                 result.IteratorReturnName = Utils.GetTsTypeName(interfaces[i].GenericTypeArguments[0]);
                             }
-
                             if (interfaces[i].IsNested)
                             {
                                 List<string> p = new List<string>();
@@ -384,7 +361,6 @@ namespace Puerts.Editor
                                     p.Add(temp.DeclaringType.Name.Replace('`', '$'));
                                     temp = temp.DeclaringType;
                                 }
-
                                 p.Reverse();
                                 if (interfaces[i].Namespace != null)
                                 {
@@ -395,15 +371,12 @@ namespace Puerts.Editor
                                     interfaceTypeGenInfo.Namespace = string.Join(".", p.ToArray());
                                 }
                             }
-
                             if (interfaces[i].IsGenericType && interfaces[i].Namespace != null)
                             {
                                 interfaceTypeGenInfo.Name = interfaceTypeGenInfo.Name.Substring(interfaceTypeGenInfo.Namespace.Length + 1);
                             }
-
                             genInfoList.Add(interfaceTypeGenInfo);
                         }
-
                         result.interfaces = genInfoList.ToArray();
                     }
 
@@ -416,7 +389,6 @@ namespace Puerts.Editor
                             p.Add(temp.DeclaringType.Name.Replace('`', '$'));
                             temp = temp.DeclaringType;
                         }
-
                         p.Reverse();
                         if (type.Namespace != null)
                         {
@@ -445,7 +417,6 @@ namespace Puerts.Editor
                                 p.Add(temp.DeclaringType.Name.Replace('`', '$'));
                                 temp = temp.DeclaringType;
                             }
-
                             p.Reverse();
                             if (type.BaseType.Namespace != null)
                             {
@@ -456,7 +427,6 @@ namespace Puerts.Editor
                                 result.BaseType.Namespace = string.Join(".", p.ToArray());
                             }
                         }
-
                         if (type.BaseType.IsGenericType && type.BaseType.Namespace != null)
                         {
                             result.BaseType.Name = result.BaseType.Name.Substring(result.BaseType.Namespace.Length + 1);
@@ -507,7 +477,6 @@ namespace Puerts.Editor
                                 AddRefType(workTypes, refTypes, pinfo.ParameterType);
                             }
                         }
-
                         foreach (var constructor in type.GetConstructors())
                         {
                             foreach (var pinfo in constructor.GetParameters())
@@ -523,7 +492,7 @@ namespace Puerts.Editor
                     foreach (var t in refTypes.Distinct())
                     {
                         var info = TsTypeGenInfo.FromType(t, genTypeSet);
-                        if (tsTypeGenInfos.ContainsKey(info.FullName))
+                        if (tsTypeGenInfos.ContainsKey(info.FullName)) 
                         {
 #if UNITY_EDITOR
                             UnityEngine.Debug.LogWarning("[Puer] Existed type: " + info.FullName + ". It may cause some unexpected behaviour.");
@@ -534,7 +503,6 @@ namespace Puerts.Editor
                             tsTypeGenInfos.Add(info.FullName, info);
                         }
                     }
-
                     foreach (var info in tsTypeGenInfos)
                     {
                         CheckGenInfos(tsTypeGenInfos, info.Value);
@@ -548,13 +516,13 @@ namespace Puerts.Editor
                                 Name = g.Key,
                                 Types = g.ToArray()
                             }).ToArray(),
-#if CSHARP_7_3_OR_NEWER
-                        TaskDef = refTypes.Contains(typeof(System.Threading.Tasks.Task<>))
-                            ? "type $Task<T> = System.Threading.Tasks.Task$1<T>"
-                            : "interface $Task<T> {}",
-#else
+        #if CSHARP_7_3_OR_NEWER
+                        TaskDef = refTypes.Contains(typeof(System.Threading.Tasks.Task<>)) ?
+                            "type $Task<T> = System.Threading.Tasks.Task$1<T>"
+                                : "interface $Task<T> {}",
+        #else
                         TaskDef = "interface $Task<T> {}",
-#endif
+        #endif
                     };
                 }
 
@@ -571,13 +539,10 @@ namespace Puerts.Editor
                             list = new List<TsMethodGenInfo>();
                             result.Add(info.Name, list);
                         }
-
                         list.Add(info);
                     }
-
                     return result;
                 }
-
                 /// <summary>
                 /// resolve implemented/override and overload method
                 /// </summary>
@@ -588,7 +553,6 @@ namespace Puerts.Editor
                         info.IsCheckOk = true;
                         return;
                     }
-
                     info.IsCheckOk = true;
 
                     TsTypeGenInfo targetInfo;
@@ -616,7 +580,6 @@ namespace Puerts.Editor
                             methods.AddRange(TsMethodGenInfo.FromTsGenTypeInfos(tsGenTypeInfos, targetInfo, true));
                             properties.AddRange(TsPropertyGenInfo.FromTsTypeGenInfo(tsGenTypeInfos, targetInfo, true));
                         }
-
                         ifaceMethods = methods.ToArray();
                         ifaceProperties = properties.ToArray();
                     }
@@ -633,11 +596,11 @@ namespace Puerts.Editor
                         List<TsMethodGenInfo> infos;
                         var implMethods = ifaceMethods.Where(
                             method => !((
-                                ownMethods.TryGetValue(method.Name, out infos) &&
+                                ownMethods.TryGetValue(method.Name, out infos) && 
                                 infos.FirstOrDefault(m => method.Equals(m)) != null
                             ) || (
-                                baseMethods != null &&
-                                baseMethods.TryGetValue(method.Name, out infos) &&
+                                baseMethods != null && 
+                                baseMethods.TryGetValue(method.Name, out infos) && 
                                 infos.FirstOrDefault(m => method.Equals(m)) != null
                             ))
                         );
@@ -645,7 +608,7 @@ namespace Puerts.Editor
                             prop => !((
                                 ownProperties.FirstOrDefault(p => prop.Name.Equals(p.Name)) != null
                             ) || (
-                                baseProperties != null &&
+                                baseProperties != null && 
                                 baseProperties.FirstOrDefault(p => prop.Name.Equals(p.Name)) != null
                             ))
                         );
@@ -654,7 +617,6 @@ namespace Puerts.Editor
 
                         ownMethods = MethodGenInfosToDict(info.Methods);
                     }
-
                     //override/overload method
                     if (baseMethods != null)
                     {
@@ -675,16 +637,13 @@ namespace Puerts.Editor
                                     diffMethods.Add(bMethod);
                                 }
                             }
-
                             if (oMethods.Count + diffMethods.Count != bMethods.Count)
                             {
                                 selectMethods.AddRange(diffMethods);
                             }
                         }
-
                         info.Methods = selectMethods.ToArray();
                     }
-
                     info.Methods = info.Methods.Distinct(new TsMethodGenInfoComparer()).ToArray();
                 }
 
@@ -702,7 +661,7 @@ namespace Puerts.Editor
                     }
 
                     // 如果是泛型参数，取完父类（也就是约束类）后就结束
-                    if (type.IsGenericParameter)
+                    if (type.IsGenericParameter) 
                     {
                         return;
                     }
@@ -742,7 +701,9 @@ namespace Puerts.Editor
                         }
                     }
                 }
+
             }
         }
+
     }
 }

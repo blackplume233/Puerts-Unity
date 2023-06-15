@@ -14,24 +14,25 @@ using Puerts.TypeMapping;
 
 namespace Puerts.Editor
 {
-    namespace Generator
-    {
-        class Utils
-        {
+    namespace Generator {
+
+        class Utils {
+
             public const BindingFlags Flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
 
             private static List<Func<MemberInfo, bool>> InstructionsFilters = new List<Func<MemberInfo, bool>>();
+            private static List<Func<Type, bool>> DisallowedTypeFilters = new List<Func<Type, bool>>();
             private static List<Func<MemberInfo, BindingMode>> BindingModeFilters = new List<Func<MemberInfo, BindingMode>>();
-
+            
             public static bool HasFilter = false;
-
             public static void SetFilters(List<MethodInfo> filters)
             {
-                if (filters == null)
+                if (filters == null) 
                 {
                     HasFilter = false;
                     InstructionsFilters.Clear();
                     BindingModeFilters.Clear();
+                    DisallowedTypeFilters.Clear();
                     return;
                 }
 
@@ -40,40 +41,54 @@ namespace Puerts.Editor
                 {
                     if (filter.GetParameters().Length == 2)
                     {
-                        if (filter.ReturnType == typeof(BindingMode))
+                        if (filter.ReturnType == typeof(BindingMode)) 
                         {
                             var dlg = (Func<FilterAction, MemberInfo, BindingMode>)Delegate.CreateDelegate(typeof(Func<FilterAction, MemberInfo, BindingMode>), filter);
 
-                            BindingModeFilters.Add((MemberInfo mbi) => { return dlg(FilterAction.BindingMode, mbi); });
+                            BindingModeFilters.Add((MemberInfo mbi) => {
+                                return dlg(FilterAction.BindingMode, mbi);
+                            });
                         }
                         else if (filter.ReturnType == typeof(bool))
                         {
-                            var dlg = (Func<FilterAction, MemberInfo, bool>)Delegate.CreateDelegate(typeof(Func<FilterAction, MemberInfo, bool>), filter);
-
-                            BindingModeFilters.Add((MemberInfo mbi) =>
+                            Type pType = filter.GetParameters()[1].ParameterType;
+                            if (pType == typeof(MemberInfo))
                             {
-                                bool res = dlg(FilterAction.BindingMode, mbi);
-                                return res ? BindingMode.SlowBinding : BindingMode.FastBinding;
-                            });
-                            InstructionsFilters.Add((MemberInfo mbi) => { return dlg(FilterAction.MethodInInstructions, mbi); });
+                                var dlg = (Func<FilterAction, MemberInfo, bool>)Delegate.CreateDelegate(typeof(Func<FilterAction, MemberInfo, bool>), filter);
+
+                                BindingModeFilters.Add((MemberInfo mbi) => {
+                                    bool res = dlg(FilterAction.BindingMode, mbi);
+                                    return res ? BindingMode.SlowBinding : BindingMode.FastBinding;
+                                });
+                                InstructionsFilters.Add((MemberInfo mbi) => {
+                                    return dlg(FilterAction.MethodInInstructions, mbi);
+                                });
+                            }
+                            else if (pType == typeof(Type))
+                            {
+                                var dlg = (Func<FilterAction, Type, bool>)Delegate.CreateDelegate(typeof(Func<FilterAction, Type, bool>), filter);
+                                
+                                DisallowedTypeFilters.Add((Type type) => {
+                                    return dlg(FilterAction.DisallowedType, type);
+                                });
+                            }
                         }
                     }
-                    else
+                    else 
                     {
-                        if (filter.ReturnType == typeof(BindingMode))
+                        if (filter.ReturnType == typeof(BindingMode)) 
                         {
                             BindingModeFilters.Add((Func<MemberInfo, BindingMode>)Delegate.CreateDelegate(typeof(Func<MemberInfo, BindingMode>), filter));
                         }
                         else if (filter.ReturnType == typeof(bool))
                         {
                             var dlg = (Func<MemberInfo, bool>)Delegate.CreateDelegate(typeof(Func<MemberInfo, bool>), filter);
-                            BindingModeFilters.Add((MemberInfo mbi) =>
-                            {
+                            BindingModeFilters.Add((MemberInfo mbi) => {
                                 bool res = dlg(mbi);
                                 return res ? BindingMode.SlowBinding : BindingMode.FastBinding;
                             });
                         }
-                    }
+                    }   
 
                     // else if (filter.ReturnType == typeof(FilterClass))
                     // {
@@ -130,10 +145,8 @@ namespace Puerts.Editor
                                 break;
                             }
                         }
-
                         blittableTypes[type] = ret;
                     }
-
                     return ret;
                 }
                 else
@@ -165,7 +178,17 @@ namespace Puerts.Editor
                 return getMethod == null ? setMethod.IsStatic : getMethod.IsStatic;
             }
 
-            internal static BindingMode getBindingMode(MemberInfo mbi)
+            internal static bool isDisallowedType(Type type) 
+            {
+                var result = false;
+                foreach (var filter in DisallowedTypeFilters)
+                {
+                    result = result || filter(type);
+                }
+                return result;
+            }
+
+            internal static BindingMode getBindingMode(MemberInfo mbi) 
             {
                 BindingMode strictestMode = BindingMode.FastBinding;
                 foreach (var filter in BindingModeFilters)
@@ -173,18 +196,16 @@ namespace Puerts.Editor
                     var mode = filter(mbi);
                     strictestMode = strictestMode > mode ? mode : strictestMode;
                 }
-
                 return strictestMode;
             }
 
-            internal static bool shouldNotGetArgumentsInInstructions(MemberInfo mbi)
+            internal static bool shouldNotGetArgumentsInInstructions(MemberInfo mbi) 
             {
                 var result = false;
                 foreach (var filter in InstructionsFilters)
                 {
                     result = result || filter(mbi);
                 }
-
                 return result;
             }
 
@@ -196,7 +217,7 @@ namespace Puerts.Editor
             public static bool IsNotSupportedMember(MemberInfo mbi, bool notFiltEII = false)
             {
                 if (mbi == null) return false;
-                if (IsObsolete(mbi) /* && oa.IsError*/) //希望只过滤掉Error类别过时方法可以把oa.IsError加上
+                if (IsObsolete(mbi)/* && oa.IsError*/) //希望只过滤掉Error类别过时方法可以把oa.IsError加上
                 {
                     return true;
                 }
@@ -213,19 +234,15 @@ namespace Puerts.Editor
                     {
                         return true;
                     }
-
                     if (!fi.IsPublic)
                     {
                         if (notFiltEII)
                         {
                             return !fi.Name.Contains("."); /*explicit interface implementation*/
                         }
-
                         return true;
                     }
-                }
-
-                ;
+                };
                 if (mbi is PropertyInfo)
                 {
                     PropertyInfo pi = (mbi as PropertyInfo);
@@ -242,45 +259,40 @@ namespace Puerts.Editor
                     var getMethod = pi.GetGetMethod();
                     var setMethod = pi.GetSetMethod();
                     if (!(
-                            (getMethod != null && getMethod.IsPublic && !IsObsolete(getMethod)) ||
-                            (setMethod != null && setMethod.IsPublic && !IsObsolete(setMethod))
-                        ))
+                        (getMethod != null && getMethod.IsPublic && !IsObsolete(getMethod)) ||
+                        (setMethod != null && setMethod.IsPublic && !IsObsolete(setMethod))
+                    ))
                     {
                         if (notFiltEII)
                         {
                             return !pi.Name.Contains(".");
                         }
-
                         return true;
                     }
                 }
-
                 if (mbi is MethodInfo)
                 {
                     MethodInfo mi = mbi as MethodInfo;
 
-                    if (mi.Name.Contains("$"))
+                    if (mi.Name.Contains("$")) 
                     {
                         // fix #964
                         return true;
                     }
-
                     if (mi.ReturnType.IsPointer
 #if UNITY_2021_2_OR_NEWER
                         || mi.ReturnType.IsByRefLike
 #endif
-                       )
+                    )
                     {
                         return true;
                     }
-
                     if (!mi.IsPublic)
                     {
                         if (notFiltEII)
                         {
                             return !mi.Name.Contains(".");
                         }
-
                         return true;
                     }
                 }
@@ -293,45 +305,43 @@ namespace Puerts.Editor
 #if UNITY_2021_2_OR_NEWER
                         || pInfo.ParameterType.IsByRefLike
 #endif
-                        ))
+                    ))
                     {
                         return true;
                     }
-
                     if (!mb.IsPublic)
                     {
                         return true;
                     }
                 }
-
                 return false;
             }
-
+        
             public static bool isDefined(MethodBase test, Type type)
             {
-#if PUERTS_GENERAL
+    #if PUERTS_GENERAL
                 return test.GetCustomAttributes(false).Any(ca => ca.GetType().ToString() == type.ToString());
-#else
+    #else
                 return test.IsDefined(type, false);
-#endif
+    #endif
             }
-
+        
             public static Type ToConstraintType(Type type, bool isGenericTypeDefinition)
             {
                 if (type.IsGenericType)
                     return type.GetGenericTypeDefinition().MakeGenericType(
-                        type.GetGenericArguments().Select(t => ToConstraintType(t, isGenericTypeDefinition)).ToArray()
+                        type.GetGenericArguments().Select(t=> ToConstraintType(t, isGenericTypeDefinition)).ToArray()
                     );
-                else if (!isGenericTypeDefinition && type.IsGenericParameter && type.BaseType != null && type.BaseType != typeof(object) && type.BaseType != typeof(ValueType))
+                else if (!isGenericTypeDefinition && type.IsGenericParameter && type.BaseType != null && type.BaseType != typeof(object) && type.BaseType != typeof(ValueType)) 
                     return ToConstraintType(type.BaseType, false);
-                else
+                else 
                     return type;
             }
-
+        
             public static bool IsGetterOrSetter(MethodInfo method)
             {
                 return (method.IsSpecialName && method.Name.StartsWith("get_") && method.GetParameters().Length != 1)
-                       || (method.IsSpecialName && method.Name.StartsWith("set_") && method.GetParameters().Length != 2);
+                    || (method.IsSpecialName && method.Name.StartsWith("set_") && method.GetParameters().Length != 2);
             }
 
             public static void FillEnumInfo(Wrapper.DataTypeInfo info, Type type)
@@ -357,13 +367,13 @@ namespace Puerts.Editor
             {
                 if (type.IsGenericType)
                     return type.GetGenericTypeDefinition().MakeGenericType(
-                        type.GetGenericArguments().Select(t => RemoveRefAndToConstraintType(t)).ToArray()
+                        type.GetGenericArguments().Select(t=> RemoveRefAndToConstraintType(t)).ToArray()
                     );
                 else if (type.IsGenericParameter && type.BaseType != null && type.BaseType != typeof(object) && type.BaseType != typeof(ValueType))
                     return RemoveRefAndToConstraintType(type.BaseType);
-                else if (type.IsByRef)
+                else if (type.IsByRef) 
                     return RemoveRefAndToConstraintType(type.GetElementType());
-                else
+                else 
                     return type;
             }
 
@@ -380,17 +390,15 @@ namespace Puerts.Editor
                 if (extensionMethods == null)
                 {
                     extensionMethods = (from type in genTypeSet
-                        from method in type.GetMethods(BindingFlags.Static | BindingFlags.Public)
-                        where isDefined(method, typeof(ExtensionAttribute)) && Puerts.Utils.IsNotGenericOrValidGeneric(method)
-                        group method by getExtendedType(method)).ToDictionary(g => g.Key, g => g.ToArray());
+                                        from method in type.GetMethods(BindingFlags.Static | BindingFlags.Public)
+                                        where isDefined(method, typeof(ExtensionAttribute)) && Puerts.Utils.IsNotGenericOrValidGeneric(method)
+                                        group method by getExtendedType(method)).ToDictionary(g => g.Key, g => g.ToArray());
                 }
-
                 MethodInfo[] ret;
                 if (!extensionMethods.TryGetValue(checkType, out ret))
                 {
                     return new MethodInfo[] { };
                 }
-
                 return ret;
             }
 
@@ -434,7 +442,7 @@ namespace Puerts.Editor
                 else if (type == typeof(Delegate) || type == typeof(Puerts.GenericDelegate))
                     return "Function";
 #if CSHARP_7_3_OR_NEWER
-                else if (type == typeof(System.Threading.Tasks.Task))
+                else if (type == typeof(System.Threading.Tasks.Task)) 
                     return "$Task<any>";
 #endif
                 else if (type.IsByRef)
@@ -448,7 +456,6 @@ namespace Puerts.Editor
                     {
                         return GetTsTypeName(underlyingType) + " | null";
                     }
-
                     var fullName = type.FullName == null ? type.ToString() : type.FullName;
                     var parts = fullName.Replace('+', '.').Split('`');
                     var argTypenames = type.GetGenericArguments()
@@ -467,7 +474,6 @@ namespace Puerts.Editor
                 {
                     return GetRawType(type.GetElementType());
                 }
-
                 if (type.IsGenericType) return type.GetGenericTypeDefinition();
                 return type;
             }

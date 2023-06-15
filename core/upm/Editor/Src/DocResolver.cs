@@ -109,7 +109,6 @@ namespace Puerts
                     // LoadXmlDocFrom(resolver, Path.Combine(bindingManager.prefs.xmlDocDir, fi.Name));
                 }
             }
-
             return resolver;
         }
 
@@ -124,7 +123,6 @@ namespace Puerts
                 {
                     xmlFilePath = xmlFilePath.Replace("Library\\ScriptAssemblies\\", "Library\\CommonetDocs\\");
                 }
-
                 return resolver.ParseXml(xmlFilePath);
             }
             catch (Exception)
@@ -143,7 +141,6 @@ namespace Puerts
             {
                 return docBody.ToJsDoc();
             }
-
             return "";
         }
 
@@ -157,7 +154,6 @@ namespace Puerts
             {
                 return docBody.ToJsDoc();
             }
-
             return "";
         }
 
@@ -171,7 +167,6 @@ namespace Puerts
             {
                 return docBody.ToJsDoc();
             }
-
             return "";
         }
 
@@ -184,7 +179,6 @@ namespace Puerts
             {
                 return docBody.ToJsDoc();
             }
-
             return "";
         }
 
@@ -201,7 +195,6 @@ namespace Puerts
             {
                 return null;
             }
-
             var xName = type.FullName;
             DocBody body;
             _tdocs.TryGetValue(xName, out body);
@@ -209,13 +202,12 @@ namespace Puerts
         }
 
         public DocBody GetDocBody<T>(T methodBase)
-            where T : MethodBase
+        where T : MethodBase
         {
             if (methodBase.IsGenericMethod || !methodBase.IsPublic || methodBase.ContainsGenericParameters)
             {
                 return null;
             }
-
             var declType = methodBase.DeclaringType;
             //_sb.Clear();
             _sb.Remove(0, _sb.Length);
@@ -226,7 +218,6 @@ namespace Puerts
             {
                 return null;
             }
-
             var xName = _sb.ToString();
             DocBody body;
             _mdocs.TryGetValue(xName, out body);
@@ -239,7 +230,6 @@ namespace Puerts
             {
                 return null;
             }
-
             var declType = fieldInfo.DeclaringType;
             var xName = declType.FullName + "." + fieldInfo.Name;
             DocBody body;
@@ -253,7 +243,6 @@ namespace Puerts
             {
                 return null;
             }
-
             var declType = propertyInfo.DeclaringType;
             var xName = declType.FullName + "." + propertyInfo.Name;
             DocBody body;
@@ -262,7 +251,7 @@ namespace Puerts
         }
 
         private bool ExtractMethodParamters<T>(T methodBase, StringBuilder sb)
-            where T : MethodBase
+        where T : MethodBase
         {
             var parameters = methodBase.GetParameters();
             if (parameters.Length > 0)
@@ -274,14 +263,12 @@ namespace Puerts
                 {
                     return false;
                 }
-
                 sb.Append(type.FullName);
                 if (i != size - 1)
                 {
                     sb.Append(',');
                 }
             }
-
             if (parameters.Length > 0)
                 sb.Append(')');
             return true;
@@ -366,13 +353,11 @@ namespace Puerts
                 {
                     break;
                 }
-
                 if (type == XmlNodeType.Text)
                 {
                     text = reader.Value;
                 }
             }
-
             return text;
         }
 
@@ -389,20 +374,17 @@ namespace Puerts
                     {
                         break;
                     }
-
                     if (type == XmlNodeType.Element && reader.Name == "para")
                     {
                         _sb.Append(ReadElementContentAsString(reader, body, "para"));
                         _sb.Append(' ');
                     }
-
                     if (type == XmlNodeType.Text)
                     {
                         _sb.Append(reader.Value);
                     }
                 }
             }
-
             return _sb.ToString();
         }
 
@@ -431,21 +413,12 @@ namespace Puerts
                                 body.name = subname;
                                 switch (name[0])
                                 {
-                                    case 'F':
-                                        _fdocs[subname] = body;
-                                        break;
-                                    case 'P':
-                                        _pdocs[subname] = body;
-                                        break;
-                                    case 'M':
-                                        _mdocs[subname] = body;
-                                        break;
-                                    case 'T':
-                                        _tdocs[subname] = body;
-                                        break;
+                                    case 'F': _fdocs[subname] = body; break;
+                                    case 'P': _pdocs[subname] = body; break;
+                                    case 'M': _mdocs[subname] = body; break;
+                                    case 'T': _tdocs[subname] = body; break;
                                 }
                             }
-
                             ParseXmlMember(reader, body, "member");
                         }
                     }

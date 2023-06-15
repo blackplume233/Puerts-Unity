@@ -4,7 +4,6 @@
 * Puerts is licensed under the BSD 3-Clause License, except for the third-party components listed in the file 'LICENSE' which may be subject to their corresponding license terms. 
 * This file is subject to the terms and conditions defined in file 'LICENSE', which is part of this source code package.
 */
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,6 +16,7 @@ namespace Puerts.Editor
     {
         public class FileExporter
         {
+
             public static Dictionary<string, List<KeyValuePair<object, int>>> configure;
             public static List<Type> genTypes;
 
@@ -25,8 +25,7 @@ namespace Puerts.Editor
                 if (!Utils.HasFilter)
                 {
                     Utils.SetFilters(Configure.GetFilters());
-                    configure = Configure.GetConfigureByTags(new List<string>()
-                    {
+                    configure = Configure.GetConfigureByTags(new List<string>() {
                         "Puerts.BindingAttribute",
                         "Puerts.BlittableCopyAttribute",
                         "Puerts.TypingAttribute",
@@ -51,7 +50,6 @@ namespace Puerts.Editor
                 {
                     loader = new DefaultLoader();
                 }
-
                 using (var jsEnv = new JsEnv(loader))
                 {
                     jsEnv.UsingFunc<DTS.TypingGenInfo, bool, string>();
@@ -74,8 +72,7 @@ namespace Puerts.Editor
                 {
                     Utils.SetFilters(Configure.GetFilters());
 
-                    configure = Configure.GetConfigureByTags(new List<string>()
-                    {
+                    configure = Configure.GetConfigureByTags(new List<string>() {
                         "Puerts.BindingAttribute",
                         "Puerts.BlittableCopyAttribute",
                         "Puerts.TypingAttribute",
@@ -99,7 +96,6 @@ namespace Puerts.Editor
                 {
                     loader = new DefaultLoader();
                 }
-
                 using (var jsEnv = new JsEnv(loader))
                 {
                     var wrapRender = jsEnv.ExecuteModule<Func<Wrapper.StaticWrapperInfo, string>>("puerts/templates/wrapper.tpl.mjs", "default");
@@ -128,14 +124,11 @@ namespace Puerts.Editor
                         {
                             continue;
                         }
-
                         while (makeFileUniqueMap.ContainsKey(filePath.ToLower()))
                         {
-                            // ���ڴ�Сд�ظ����������һ��idȥ��
                             filePath = saveTo + staticWrapperInfo.WrapClassName + "_" + uniqueId + ".cs";
                             uniqueId++;
                         }
-
                         makeFileUniqueMap.Add(filePath.ToLower(), true);
 
                         string fileContent = wrapRender(staticWrapperInfo);
@@ -157,50 +150,12 @@ namespace Puerts.Editor
 
                 Utils.SetFilters(null);
             }
-
-            public static void GenMarcoHeader(string outDir, bool forceIl2Cpp)
-            {
-                var filePath = outDir + "unityenv_for_puerts.h";
-                string fileContent = "";
-
-#if !UNITY_2021_1_OR_NEWER
-                if (false)
-#endif
-                {
-                    fileContent += @"
-#ifndef UNITY_2021_1_OR_NEWER
-    #define UNITY_2021_1_OR_NEWER
-#endif";
-                }
-
-#if UNITY_ANDROID || UNITY_IPHONE
-            if (false)
-#endif
-                {
-                    fileContent += @"
-#ifndef PUERTS_SHARED
-    #define PUERTS_SHARED
-#endif";
-                }
-
-                if (forceIl2Cpp)
-                    fileContent += @"
-#ifndef EXPERIMENTAL_IL2CPP_PUERTS
-    #define EXPERIMENTAL_IL2CPP_PUERTS
-#endif";
-                using (StreamWriter textWriter = new StreamWriter(filePath, false, Encoding.UTF8))
-                {
-                    textWriter.Write(fileContent);
-                    textWriter.Flush();
-                }
-            }
-
+            
             public static void GenRegisterInfo(string outDir, ILoader loader = null)
             {
-                var configure = Puerts.Configure.GetConfigureByTags(new List<string>()
-                {
-                    "Puerts.BindingAttribute",
-                });
+                var configure = Puerts.Configure.GetConfigureByTags(new List<string>() {
+                        "Puerts.BindingAttribute",
+                    });
                 var genTypes = configure["Puerts.BindingAttribute"].Select(kv => kv.Key)
                     .Where(o => o is Type)
                     .Cast<Type>()
@@ -212,14 +167,13 @@ namespace Puerts.Editor
                 {
                     Utils.SetFilters(Configure.GetFilters());
                 }
-
+                
                 var RegisterInfos = RegisterInfoGenerator.GetRegisterInfos(genTypes);
 
                 if (loader == null)
                 {
                     loader = new DefaultLoader();
                 }
-
                 using (var jsEnv = new JsEnv(loader))
                 {
                     var registerInfoRender = jsEnv.ExecuteModule<Func<List<RegisterInfoForGenerate>, string>>("puerts/templates/registerinfo.tpl.mjs", "default");
@@ -234,4 +188,5 @@ namespace Puerts.Editor
             }
         }
     }
+
 }

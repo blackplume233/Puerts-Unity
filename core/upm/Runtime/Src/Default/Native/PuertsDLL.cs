@@ -17,7 +17,6 @@ namespace Puerts
     public class MonoPInvokeCallbackAttribute : System.Attribute
     {
         private Type type;
-
         public MonoPInvokeCallbackAttribute(Type t)
         {
             type = t;
@@ -78,20 +77,19 @@ namespace Puerts
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern int GetLibVersion();
 
-        public static int GetApiLevel()
-        {
-            try
+        public static int GetApiLevel() {
+            try 
             {
                 return _GetApiLevel();
-            }
-            catch (DllNotFoundException)
+            } 
+            catch(DllNotFoundException)
             {
 #if !PUERTS_GENERAL
                 UnityEngine.Debug.LogError("[Puer001] DllNotFoundException detected. You can solve this problem following the FAQ.");
 #endif
                 throw;
             }
-            catch (Exception)
+            catch(Exception) 
             {
                 return GetLibVersion();
             }
@@ -102,7 +100,7 @@ namespace Puerts
 
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr CreateJSEngine();
-
+        
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr CreateJSEngineWithExternalEnv(IntPtr externalRuntime, IntPtr externalContext);
 
@@ -123,7 +121,8 @@ namespace Puerts
 
         private const int TEMP_STRING_BUFFER_SIZE = 1024;
 
-        [ThreadStatic] private static byte[] s_tempNativeStringBuffer;
+        [ThreadStatic]
+        private static byte[] s_tempNativeStringBuffer;
 
         private static byte[] GetTempNativeStringBuff(int strlen)
         {
@@ -132,7 +131,6 @@ namespace Puerts
             {
                 return new byte[strlen];
             }
-
             return buf;
         }
 
@@ -192,9 +190,6 @@ namespace Puerts
             SetGeneralDestructor(isolate, fn);
         }
 
-        // [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-        // public static extern IntPtr ExecuteModule(IntPtr isolate, string path, string exportee);
-
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern bool ClearModuleCache(IntPtr isolate, string path);
 
@@ -220,12 +215,12 @@ namespace Puerts
             {
                 throw new InvalidProgramException("eval null string");
             }
-
             return Eval(isolate, code, path);
         }
 #endif
 
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        // in WebGL, the prefix '_' is necessary. (Dont know why)
         public static extern int _RegisterClass(IntPtr isolate, int BaseTypeId, string fullName, IntPtr constructor, IntPtr destructor, long data);
 
         public static int RegisterClass(IntPtr isolate, int BaseTypeId, string fullName, V8ConstructorCallback constructor, V8DestructorCallback destructor, long data)
@@ -234,7 +229,7 @@ namespace Puerts
             GCHandle.Alloc(constructor);
             GCHandle.Alloc(destructor);
 #endif
-            IntPtr fn1 = constructor == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(constructor);
+            IntPtr fn1 = constructor == null ? IntPtr.Zero: Marshal.GetFunctionPointerForDelegate(constructor);
             IntPtr fn2 = destructor == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(destructor);
 
             return _RegisterClass(isolate, BaseTypeId, fullName, fn1, fn2, data);
@@ -283,6 +278,12 @@ namespace Puerts
 
             return RegisterProperty(isolate, classID, name, isStatic, fn1, getterData, fn2, setterData, dontDelete);
         }
+        
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr GetJSObjectValueGetter(IntPtr isolate);
+        
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr GetModuleExecutor(IntPtr isolate);
 
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ReturnClass(IntPtr isolate, IntPtr info, int classID);
@@ -387,10 +388,8 @@ namespace Puerts
             {
                 return 0;
             }
-
             return GetBigIntFromValue(isolate, value, isByRef);
         }
-
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr GetObjectFromValue(IntPtr isolate, IntPtr value, bool isByRef);
 
@@ -427,10 +426,9 @@ namespace Puerts
 #else
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl, EntryPoint = "SetStringToOutValue")]
         protected static extern void __SetStringToOutValue(IntPtr isolate, IntPtr value, string str);
-
         public static void SetStringToOutValue(IntPtr isolate, IntPtr value, string str)
         {
-            if (str == null)
+            if (str == null) 
             {
                 SetNullToOutValue(isolate, value);
             }
@@ -561,7 +559,6 @@ namespace Puerts
             {
                 return 0;
             }
-
             return GetBigIntFromResult(resultInfo);
         }
 
@@ -612,16 +609,12 @@ namespace Puerts
 
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ReturnArrayBuffer(IntPtr isolate, IntPtr info, byte[] bytes, int Length);
-
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetArrayBufferToOutValue(IntPtr isolate, IntPtr value, Byte[] bytes, int length);
-
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void PushArrayBufferForJSFunction(IntPtr function, byte[] bytes, int length);
-
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr GetArrayBufferFromValue(IntPtr isolate, IntPtr value, out int length, bool isOut);
-
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr GetArrayBufferFromResult(IntPtr function, out int length);
     }

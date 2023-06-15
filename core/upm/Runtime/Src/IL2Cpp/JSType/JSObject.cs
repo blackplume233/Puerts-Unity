@@ -6,6 +6,7 @@
 */
 
 #if EXPERIMENTAL_IL2CPP_PUERTS && ENABLE_IL2CPP
+
 using System;
 using System.Runtime.CompilerServices;
 
@@ -27,6 +28,17 @@ namespace Puerts
         void releaseScriptObject()
         {
             throw new NotImplementedException();
+        }
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        object GetJSObjectValue(string key, Type resultType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T Get<T>(string key) 
+        {
+            return (T)GetJSObjectValue(key, typeof(T));
         }
 
         ~JSObject()

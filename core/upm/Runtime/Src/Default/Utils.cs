@@ -103,15 +103,12 @@ namespace Puerts
 
             List<Type> validGenericParameter = new List<Type>();
 
-            if (pinfos == null) pinfos = method.GetParameters();
+            if (pinfos == null) pinfos = method.GetParameters(); 
             foreach (var parameters in pinfos)
             {
                 Type parameterType = parameters.ParameterType;
 
-                if (!HasValidContraint(parameterType, validGenericParameter))
-                {
-                    return false;
-                }
+                if (!HasValidContraint(parameterType, validGenericParameter)) { return false; }
             }
 
             return validGenericParameter.Count > 0 && (
@@ -158,7 +155,6 @@ namespace Puerts
                         if (!parameterConstraint.IsClass() || (parameterConstraint == typeof(ValueType)))
                             return false;
                     }
-
                     hasValidGenericParameter = true;
                     if (!returnTypeValid)
                     {
@@ -169,7 +165,6 @@ namespace Puerts
                     }
                 }
             }
-
             return hasValidGenericParameter && returnTypeValid;
         }
 
@@ -190,7 +185,7 @@ namespace Puerts
                 MethodInfo[] methods = type.GetMember(name)
                     .Select(m => (MethodInfo)m)
                     .Where(m => !IsObsoleteError(m) && !IsVirtualMethod(m))
-                    .Where(m => !errorMethods.TryGetValue(m.Name, out matchTypes) || !IsMatchParameters(matchTypes, m.GetParameters().Select(o => o.ParameterType).ToArray())) //filter override method
+                    .Where(m => !errorMethods.TryGetValue(m.Name, out matchTypes) || !IsMatchParameters(matchTypes, m.GetParameters().Select(o => o.ParameterType).ToArray()))  //filter override method
                     .ToArray();
                 if (methods.Length > 0)
                 {
@@ -219,8 +214,8 @@ namespace Puerts
                 MethodInfo[] methods = type.GetMethods(flag)
                     .Where(m => Array.IndexOf<string>(methodNames, m.Name) != -1)
                     .Where(m => !IsObsoleteError(m) && !IsVirtualMethod(m))
-                    .Where(m => !m.IsSpecialName || !m.Name.StartsWith("get_") && !m.Name.StartsWith("set_")) //filter property
-                    .Where(m => !errorMethods.TryGetValue(m.Name, out matchTypes) || !IsMatchParameters(matchTypes, m.GetParameters().Select(o => o.ParameterType).ToArray())) //filter override method
+                    .Where(m => !m.IsSpecialName || !m.Name.StartsWith("get_") && !m.Name.StartsWith("set_"))   //filter property
+                    .Where(m => !errorMethods.TryGetValue(m.Name, out matchTypes) || !IsMatchParameters(matchTypes, m.GetParameters().Select(o => o.ParameterType).ToArray()))  //filter override method
                     .ToArray();
                 if (methods.Length > 0)
                 {
@@ -230,18 +225,15 @@ namespace Puerts
 
             return allMethods;
         }
-
         private static bool IsVirtualMethod(MethodInfo memberInfo)
         {
             return memberInfo.IsAbstract || (memberInfo.Attributes & MethodAttributes.NewSlot) == MethodAttributes.NewSlot;
         }
-
         private static bool IsObsoleteError(MemberInfo memberInfo)
         {
             var obsolete = memberInfo.GetCustomAttributes(typeof(ObsoleteAttribute), true).FirstOrDefault() as ObsoleteAttribute;
             return obsolete != null && obsolete.IsError;
         }
-
         private static bool IsMatchParameters(IEnumerable<Type[]> typeList, Type[] pTypes)
         {
             foreach (var types in typeList)
@@ -255,11 +247,9 @@ namespace Puerts
                     if (pTypes[i] != types[i])
                         exclude = false;
                 }
-
                 if (exclude)
                     return true;
             }
-
             return false;
         }
 
@@ -311,18 +301,16 @@ namespace Puerts
                         }
                     }
                 }
-
                 enumerator.Dispose();
 
                 Utils_Internal.extensionMethodMap = (from type in type_def_extention_method.Distinct()
 // #if UNITY_EDITOR
 //                                       where !type.Assembly.Location.Contains("Editor")
 // #endif
-                    from method in type.GetMethods(BindingFlags.Static | BindingFlags.Public)
-                    where method.IsDefined(typeof(ExtensionAttribute), false) && IsSupportedMethod(method)
-                    group method by GetExtendedType(method)).ToDictionary(g => g.Key, g => g as IEnumerable<MethodInfo>);
+                                                     from method in type.GetMethods(BindingFlags.Static | BindingFlags.Public)
+                                                     where method.IsDefined(typeof(ExtensionAttribute), false) && IsSupportedMethod(method)
+                                                     group method by GetExtendedType(method)).ToDictionary(g => g.Key, g => g as IEnumerable<MethodInfo>);
             }
-
             IEnumerable<MethodInfo> ret = null;
             Utils_Internal.extensionMethodMap.TryGetValue(type_to_be_extend, out ret);
             return ret;
@@ -342,12 +330,11 @@ namespace Puerts
                 throw new InvalidOperationException();
             return firstParameterConstraint;
         }
-
+        
         public delegate object GetValueForCheck();
-
         public static bool IsJsValueTypeMatchType(JsValueType jsType, Type csType, JsValueType csTypeMask, GetValueForCheck valueGetter = null, object value = null)
         {
-            if (jsType == JsValueType.NativeObject)
+            if (jsType == JsValueType.NativeObject) 
             {
                 if (csType == typeof(JSObject)) // 非要把一个NativeObject赋值给JSObject是允许的。
                 {
@@ -364,19 +351,16 @@ namespace Puerts
                     }
                 }
             }
-
             if ((csTypeMask & jsType) != jsType)
             {
                 return false;
             }
-
             if (jsType == JsValueType.NativeObject)
             {
                 if (value == null)
                 {
                     value = valueGetter();
                 }
-
                 if (!csType.IsAssignableFrom(value.GetType()))
                 {
                     return false;
@@ -467,6 +451,7 @@ namespace Puerts
     {
         internal static volatile Dictionary<Type, IEnumerable<MethodInfo>> extensionMethodMap = null;
     }
+
 }
 
 #endif

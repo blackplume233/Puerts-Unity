@@ -14,6 +14,13 @@ namespace Typescript.Editor
         {
             Initialize();
         }
+        
+        [MenuItem(PUERTS_MENU_PREFIX + "/Clear All Cache", false, 1)]
+        public static void ClearAllCache()
+        { 
+            Puerts.JsEnv.ClearAllModuleCaches();
+        }
+
 
         [InitializeOnLoadMethod]
         public static void Initialize()

@@ -15,21 +15,19 @@ using UnityEngine;
 
 namespace Puerts.Editor
 {
-    namespace Generator
-    {
-        public class UnityMenu
-        {
+    namespace Generator {
+
+        public class UnityMenu {
             public const string PUERTS_MENU_PREFIX = "PuerTS";
 
 #if !PUERTS_GENERAL
             [MenuItem(PUERTS_MENU_PREFIX + "/Generate (all in one)", false, 1)]
-            public static void GenV1()
+            public static void GenV1() 
             {
                 Puerts.Editor.Generator.UnityMenu.GenerateCode();
                 Puerts.Editor.Generator.UnityMenu.GenerateDTS();
-                Puerts.Editor.Generator.UnityMenu.GenerateMacroHeader(false);
             }
-
+            
             [MenuItem(PUERTS_MENU_PREFIX + "/Generate/Wrapper Code", false, 6)]
             public static void GenerateCode()
             {
@@ -58,7 +56,6 @@ namespace Puerts.Editor
 
                 Utils.SetFilters(null);
             }
-
             public static void GenerateDTSOldStyle()
             {
                 var start = DateTime.Now;
@@ -70,27 +67,6 @@ namespace Puerts.Editor
                 AssetDatabase.Refresh();
 
                 Utils.SetFilters(null);
-            }
-#if !UNITY_WEBGL
-            [MenuItem(PUERTS_MENU_PREFIX + "/Generate/il2cpp macro .h", false, 6)]
-            public static void GenerateMacroHeader()
-            {
-#if !EXPERIMENTAL_IL2CPP_PUERTS
-                GenerateMacroHeader(false);
-#else
-                GenerateMacroHeader(true);
-#endif
-            }
-#endif
-            public static void GenerateMacroHeader(bool forceIl2Cpp)
-            {
-#if PUERTS_CPP_OUTPUT_TO_NATIVE_SRC_UPM
-                var saveTo = Path.Combine(Path.GetFullPath("Packages/com.tencent.puerts.core/"), "Plugins/puerts_il2cpp/");
-#else
-                var saveTo = Puerts.Configure.GetCodeOutputDirectory();
-#endif
-                Directory.CreateDirectory(saveTo);
-                FileExporter.GenMarcoHeader(saveTo, forceIl2Cpp);
             }
 
             [MenuItem(PUERTS_MENU_PREFIX + "/Clear Generated Code", false, 9)]

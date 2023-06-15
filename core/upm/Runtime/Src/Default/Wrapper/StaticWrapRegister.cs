@@ -17,12 +17,11 @@ namespace Puerts
         Constructor = 1,
 
         Method = 2,
-
-        Property = 3,
+        
+        Property= 3,
 
         Field = 4
     }
-
     public struct LazyMemberRegisterInfo
     {
         public bool IsStatic;

@@ -30,26 +30,27 @@ namespace Puerts
             int jsEnvIdx,
             IntPtr isolate,
             IntPtr info,
+
             JsValueType expectJsType,
             Type expectCsType,
             int start,
             int end,
+
             IntPtr v8Value,
             ref object arg,
             ref JsValueType argValueType
         )
         {
-            if (!IsMatch(jsEnvIdx, isolate, expectJsType, expectCsType, false, false, v8Value, ref arg, ref argValueType))
+            if (!IsMatch(jsEnvIdx, isolate, expectJsType, expectCsType, false, false,  v8Value, ref arg, ref argValueType))
             {
                 return false;
             }
-
             for (int i = start + 1; i < end; i++)
             {
                 IntPtr value = PuertsDLL.GetArgumentValue(info, i);
                 object argObj = null;
                 JsValueType valueType = JsValueType.Invalid;
-                if (!ArgHelper.IsMatch(jsEnvIdx, isolate, expectJsType, expectCsType, false, false, value, ref argObj, ref valueType))
+                if (!ArgHelper.IsMatch(jsEnvIdx, isolate,  expectJsType, expectCsType, false, false,  value, ref argObj, ref valueType))
                 {
                     return false;
                 }
@@ -61,14 +62,16 @@ namespace Puerts
         public static bool IsMatch(
             int jsEnvIdx,
             IntPtr isolate,
+
             JsValueType expectJsType,
             Type expectCsType,
             bool isByRef,
             bool isOut,
+
             IntPtr v8Value,
             ref object arg,
-            ref JsValueType argValueType //,
-            // ref Type csType
+            ref JsValueType argValueType//,
+                                        // ref Type csType
         )
         {
             Type csType = null;
@@ -97,18 +100,15 @@ namespace Puerts
                 {
                     arg = JsEnv.jsEnvs[jsEnvIdx].GeneralGetterManager.AnyTranslator(jsEnvIdx, isolate, NativeValueApi.GetValueFromArgument, v8Value, isByRef);
                 }
-
                 if (arg.GetType() == expectCsType)
                 {
                     return true;
                 }
             }
-
             if ((expectJsType & argValueType) != argValueType)
             {
                 return false;
             }
-
             if (argValueType == JsValueType.NativeObject)
             {
                 if (expectCsType.IsArray)
@@ -127,14 +127,12 @@ namespace Puerts
                         var typeId = NativeValueApi.GetValueFromArgument.GetTypeId(isolate, v8Value, isByRef);
                         if (typeId >= 0)
                         {
-                            csType = JsEnv.jsEnvs[jsEnvIdx].TypeRegister.GetType(typeId);
+                            csType = JsEnv.jsEnvs[jsEnvIdx].TypeManager.GetType(typeId);
                         }
                     }
-
                     return csType != null && expectCsType != null && expectCsType.IsAssignableFrom(csType);
                 }
             }
-
             return true;
         }
     }

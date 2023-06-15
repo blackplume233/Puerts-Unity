@@ -43,10 +43,8 @@ namespace Puerts
                         return null;
                     }
                 }
-
                 cur = next;
             }
-
             return cur;
         }
 
@@ -69,7 +67,6 @@ namespace Puerts
 
         //无返回值泛型方法
         MethodInfo[] genericAction = null;
-
         //有返回值泛型方法
         MethodInfo[] genericFunc = null;
 
@@ -116,17 +113,15 @@ namespace Puerts
             {
                 return maybeOne.Target as GenericDelegate;
             }
-
             GenericDelegate genericDelegate = new GenericDelegate(ptr, jsEnv);
             nativePtrToGenericDelegate[ptr] = new WeakReference(genericDelegate);
             return genericDelegate;
         }
 
-        public void RemoveGenericDelegate(IntPtr ptr)
+        public void RemoveGenericDelegate(IntPtr ptr) 
         {
             WeakReference maybeOne;
-            if (nativePtrToGenericDelegate.TryGetValue(ptr, out maybeOne) && !maybeOne.IsAlive)
-            {
+            if (nativePtrToGenericDelegate.TryGetValue(ptr, out maybeOne) && !maybeOne.IsAlive) {
                 nativePtrToGenericDelegate.Remove(ptr);
             }
         }
@@ -162,7 +157,7 @@ namespace Puerts
                 {
                     PreventStripping(null);
                     var methods = typeof(GenericDelegate).GetMethods(BindingFlags.Instance | BindingFlags.Public
-                                                                                           | BindingFlags.DeclaredOnly);
+                        | BindingFlags.DeclaredOnly);
                     genericAction = methods.Where(m => m.Name == "Action").OrderBy(m => m.GetParameters().Length)
                         .ToArray();
                     genericFunc = methods.Where(m => m.Name == "Func").OrderBy(m => m.GetParameters().Length).ToArray();
@@ -198,7 +193,7 @@ namespace Puerts
                     if ((delegateMethod.ReturnType.IsValueType && delegateMethod.ReturnType != typeof(void))
                         || parameters.Length > 4
                         || typeArgs.Any(paramType => paramType.IsValueType || paramType.IsByRef)
-                       )
+                        )
                     {
                         // 如果不在支持的范围，则生成一个永远返回空的构造器
                         genericDelegateCreator = (dt, x) => null;
@@ -216,18 +211,15 @@ namespace Puerts
                         {
                             genericMethodInfo = genericFunc[parameters.Length];
                         }
-
                         //实例化泛型方法
                         var methodInfo = genericMethodInfo.MakeGenericMethod(typeArgs);
                         //构造器
                         genericDelegateCreator = (dt, ptr) => CreateDelegate(dt, ToGenericDelegate(ptr), methodInfo);
                     }
                 }
-
                 //缓存构造器，下次调用直接返回
                 genericDelegateCreatorCache[delegateType] = genericDelegateCreator;
             }
-
             //创建delegate
             return genericDelegateCreator(delegateType, nativeJsFuncPtr);
         }
@@ -329,7 +321,7 @@ namespace Puerts
         private Delegate firstValue = null;
         private Dictionary<Type, Delegate> bindTo = null;
 
-        internal IntPtr getJsFuncPtr()
+        internal IntPtr getJsFuncPtr() 
         {
             return nativeJsFuncPtr;
         }
@@ -348,7 +340,7 @@ namespace Puerts
             nativeJsFuncPtr = IntPtr.Zero;
         }
 
-        ~GenericDelegate()
+        ~GenericDelegate() 
         {
 #if THREAD_SAFE
             lock(jsEnv) {
@@ -366,12 +358,10 @@ namespace Puerts
                 value = firstValue;
                 return true;
             }
-
             if (bindTo != null)
             {
                 return bindTo.TryGetValue(key, out value);
             }
-
             value = null;
             return false;
         }
@@ -437,7 +427,7 @@ namespace Puerts
 #endif
         }
 
-        public void Action<T1, T2>(T1 p1, T2 p2)
+        public void Action<T1, T2>(T1 p1, T2 p2) 
         {
 #if THREAD_SAFE
             lock(jsEnv) {
@@ -509,7 +499,6 @@ namespace Puerts
                 string exceptionInfo = PuertsDLL.GetFunctionLastExceptionInfo(nativeJsFuncPtr);
                 throw new Exception(exceptionInfo);
             }
-
             TResult result = StaticTranslate<TResult>.Get(jsEnv.Idx, isolate, NativeValueApi.GetValueFromResult, resultInfo, false);
             PuertsDLL.ResetResult(resultInfo);
             return result;
@@ -531,7 +520,6 @@ namespace Puerts
                 string exceptionInfo = PuertsDLL.GetFunctionLastExceptionInfo(nativeJsFuncPtr);
                 throw new Exception(exceptionInfo);
             }
-
             TResult result = StaticTranslate<TResult>.Get(jsEnv.Idx, isolate, NativeValueApi.GetValueFromResult, resultInfo, false);
             PuertsDLL.ResetResult(resultInfo);
             return result;
@@ -554,7 +542,6 @@ namespace Puerts
                 string exceptionInfo = PuertsDLL.GetFunctionLastExceptionInfo(nativeJsFuncPtr);
                 throw new Exception(exceptionInfo);
             }
-
             TResult result = StaticTranslate<TResult>.Get(jsEnv.Idx, isolate, NativeValueApi.GetValueFromResult, resultInfo, false);
             PuertsDLL.ResetResult(resultInfo);
             return result;
@@ -578,7 +565,6 @@ namespace Puerts
                 string exceptionInfo = PuertsDLL.GetFunctionLastExceptionInfo(nativeJsFuncPtr);
                 throw new Exception(exceptionInfo);
             }
-
             TResult result = StaticTranslate<TResult>.Get(jsEnv.Idx, isolate, NativeValueApi.GetValueFromResult, resultInfo, false);
             PuertsDLL.ResetResult(resultInfo);
             return result;
@@ -603,7 +589,6 @@ namespace Puerts
                 string exceptionInfo = PuertsDLL.GetFunctionLastExceptionInfo(nativeJsFuncPtr);
                 throw new Exception(exceptionInfo);
             }
-
             TResult result = StaticTranslate<TResult>.Get(jsEnv.Idx, isolate, NativeValueApi.GetValueFromResult, resultInfo, false);
             PuertsDLL.ResetResult(resultInfo);
             return result;

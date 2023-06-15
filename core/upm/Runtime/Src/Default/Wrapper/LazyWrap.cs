@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Puerts
+namespace Puerts 
 {
     public class LazyMembersWrap
     {
@@ -29,16 +29,12 @@ namespace Puerts
             this.definitionType = definitionType;
         }
     }
-
     public class LazyFieldWrap : LazyMembersWrap
     {
-        public LazyFieldWrap(string memberName, JsEnv jsEnv, Type definitionType) : base(memberName, jsEnv, definitionType)
-        {
-        }
+        public LazyFieldWrap(string memberName, JsEnv jsEnv, Type definitionType) : base(memberName, jsEnv, definitionType) { }
 
         private JSFunctionCallback Getter;
         private JSFunctionCallback Setter;
-
         public void InvokeSetter(IntPtr isolate, IntPtr info, IntPtr self, int argumentsLen)
         {
             if (Getter == null)
@@ -51,13 +47,11 @@ namespace Puerts
                     Setter = GenFieldSetter(definitionType, field);
                 }
             }
-
             if (Setter != null)
             {
                 Setter(isolate, info, self, argumentsLen);
             }
         }
-
         public void InvokeGetter(IntPtr isolate, IntPtr info, IntPtr self, int argumentsLen)
         {
             if (Getter == null)
@@ -70,7 +64,6 @@ namespace Puerts
                     Setter = GenFieldSetter(definitionType, field);
                 }
             }
-
             Getter(isolate, info, self, argumentsLen);
         }
 
@@ -79,7 +72,10 @@ namespace Puerts
             var translateFunc = jsEnv.GeneralSetterManager.GetTranslateFunc(field.FieldType);
             if (field.IsStatic)
             {
-                return (IntPtr isolate, IntPtr info, IntPtr self, int argumentsLen) => { translateFunc(jsEnv.Idx, isolate, NativeValueApi.SetValueToResult, info, field.GetValue(null)); };
+                return (IntPtr isolate, IntPtr info, IntPtr self, int argumentsLen) =>
+                {
+                    translateFunc(jsEnv.Idx, isolate, NativeValueApi.SetValueToResult, info, field.GetValue(null));
+                };
             }
             else
             {
@@ -100,7 +96,7 @@ namespace Puerts
                 return (IntPtr isolate, IntPtr info, IntPtr self, int argumentsLen) =>
                 {
                     var valuePtr = PuertsDLL.GetArgumentValue(info, 0);
-                    var valueType = PuertsDLL.GetJsValueType(isolate, valuePtr, false);
+                    var valueType = PuertsDLL.GetJsValueType(isolate, valuePtr, false);                    
                     object value = null;
                     if (
                         !Utils.IsJsValueTypeMatchType(valueType, field.FieldType, typeMask, () =>
@@ -152,25 +148,21 @@ namespace Puerts
             }
         }
     }
-
     public class LazyPropertyWrap : LazyMembersWrap
     {
-        public LazyPropertyWrap(string memberName, JsEnv jsEnv, Type definitionType) : base(memberName, jsEnv, definitionType)
-        {
-        }
+        public LazyPropertyWrap(string memberName, JsEnv jsEnv, Type definitionType): base(memberName, jsEnv, definitionType) { }
 
         protected MethodReflectionWrap reflectionWrap;
 
-        public void Invoke(IntPtr isolate, IntPtr info, IntPtr self, int argumentsLen)
+        public void Invoke(IntPtr isolate, IntPtr info, IntPtr self, int argumentsLen) 
         {
             try
             {
-                if (reflectionWrap == null)
+                if (reflectionWrap == null) 
                 {
                     MethodInfo xetMethodInfo = definitionType.GetMethod(memberName, flag);
 
-                    reflectionWrap = new MethodReflectionWrap(memberName, new List<OverloadReflectionWrap>()
-                    {
+                    reflectionWrap = new MethodReflectionWrap(memberName, new List<OverloadReflectionWrap>() {
                         new OverloadReflectionWrap(xetMethodInfo, jsEnv)
                     });
                 }
@@ -183,12 +175,9 @@ namespace Puerts
             }
         }
     }
-
     public class LazyMethodWrap : LazyMembersWrap
     {
-        public LazyMethodWrap(string memberName, JsEnv jsEnv, Type definitionType) : base(memberName, jsEnv, definitionType)
-        {
-        }
+        public LazyMethodWrap(string memberName, JsEnv jsEnv, Type definitionType) : base(memberName, jsEnv, definitionType) { }
 
         protected MethodReflectionWrap reflectionWrap;
 
@@ -202,6 +191,7 @@ namespace Puerts
                     reflectionWrap = new MethodReflectionWrap(memberName,
                         overload.Select(m => new OverloadReflectionWrap(m, jsEnv, false)).ToList()
                     );
+
                 }
 
                 reflectionWrap.Invoke(isolate, info, self, argumentsLen);

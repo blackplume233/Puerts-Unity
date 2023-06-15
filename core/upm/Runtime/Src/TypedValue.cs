@@ -36,10 +36,13 @@ namespace Puerts
 #endif
         public object Target
         {
-            get { return mTarget; }
+            get
+            {
+                return mTarget;
+            }
         }
     }
-
+    
 #if ENABLE_IL2CPP
     [UnityEngine.Scripting.Preserve]
 #endif
@@ -48,11 +51,9 @@ namespace Puerts
 #if ENABLE_IL2CPP
         [UnityEngine.Scripting.Preserve]
 #endif
-        public ByteValue(byte i) : base(i)
-        {
-        }
+        public ByteValue(byte i) : base(i) { }
     }
-
+    
 #if ENABLE_IL2CPP
     [UnityEngine.Scripting.Preserve]
 #endif
@@ -61,11 +62,9 @@ namespace Puerts
 #if ENABLE_IL2CPP
         [UnityEngine.Scripting.Preserve]
 #endif
-        public SByteValue(sbyte i) : base(i)
-        {
-        }
+        public SByteValue(sbyte i) : base(i) { }
     }
-
+    
 #if ENABLE_IL2CPP
     [UnityEngine.Scripting.Preserve]
 #endif
@@ -74,11 +73,9 @@ namespace Puerts
 #if ENABLE_IL2CPP
         [UnityEngine.Scripting.Preserve]
 #endif
-        public CharValue(char i) : base(i)
-        {
-        }
+        public CharValue(char i) : base(i) { }
     }
-
+    
 #if ENABLE_IL2CPP
     [UnityEngine.Scripting.Preserve]
 #endif
@@ -87,11 +84,9 @@ namespace Puerts
 #if ENABLE_IL2CPP
         [UnityEngine.Scripting.Preserve]
 #endif
-        public Int16Value(short i) : base(i)
-        {
-        }
+        public Int16Value(short i) : base(i) { }
     }
-
+    
 #if ENABLE_IL2CPP
     [UnityEngine.Scripting.Preserve]
 #endif
@@ -100,11 +95,9 @@ namespace Puerts
 #if ENABLE_IL2CPP
         [UnityEngine.Scripting.Preserve]
 #endif
-        public UInt16Value(ushort i) : base(i)
-        {
-        }
+        public UInt16Value(ushort i) : base(i) { }
     }
-
+    
 #if ENABLE_IL2CPP
     [UnityEngine.Scripting.Preserve]
 #endif
@@ -113,11 +106,9 @@ namespace Puerts
 #if ENABLE_IL2CPP
         [UnityEngine.Scripting.Preserve]
 #endif
-        public Int32Value(int i) : base(i)
-        {
-        }
+        public Int32Value(int i) : base(i) { }
     }
-
+    
 #if ENABLE_IL2CPP
     [UnityEngine.Scripting.Preserve]
 #endif
@@ -126,11 +117,9 @@ namespace Puerts
 #if ENABLE_IL2CPP
         [UnityEngine.Scripting.Preserve]
 #endif
-        public UInt32Value(uint i) : base(i)
-        {
-        }
+        public UInt32Value(uint i) : base(i) { }
     }
-
+    
 #if ENABLE_IL2CPP
     [UnityEngine.Scripting.Preserve]
 #endif
@@ -139,18 +128,14 @@ namespace Puerts
 #if ENABLE_IL2CPP
         [UnityEngine.Scripting.Preserve]
 #endif
-        public Int64Value(long i) : base(i)
-        {
-        }
+        public Int64Value(long i) : base(i) { }
 
 #if ENABLE_IL2CPP
         [UnityEngine.Scripting.Preserve]
 #endif
-        public Int64Value(string str) : base(long.Parse(str))
-        {
-        }
+        public Int64Value(string str) : base(long.Parse(str)) { }
     }
-
+    
 #if ENABLE_IL2CPP
     [UnityEngine.Scripting.Preserve]
 #endif
@@ -159,18 +144,14 @@ namespace Puerts
 #if ENABLE_IL2CPP
         [UnityEngine.Scripting.Preserve]
 #endif
-        public UInt64Value(ulong i) : base(i)
-        {
-        }
+        public UInt64Value(ulong i) : base(i) { }
 
 #if ENABLE_IL2CPP
         [UnityEngine.Scripting.Preserve]
 #endif
-        public UInt64Value(string str) : base(ulong.Parse(str))
-        {
-        }
+        public UInt64Value(string str) : base(ulong.Parse(str)) { }
     }
-
+    
 #if ENABLE_IL2CPP
     [UnityEngine.Scripting.Preserve]
 #endif
@@ -179,11 +160,9 @@ namespace Puerts
 #if ENABLE_IL2CPP
         [UnityEngine.Scripting.Preserve]
 #endif
-        public FloatValue(float i) : base(i)
-        {
-        }
+        public FloatValue(float i) : base(i) { }
     }
-
+    
 #if ENABLE_IL2CPP
     [UnityEngine.Scripting.Preserve]
 #endif
@@ -192,8 +171,6 @@ namespace Puerts
 #if ENABLE_IL2CPP
         [UnityEngine.Scripting.Preserve]
 #endif
-        public DoubleValue(double i) : base(i)
-        {
-        }
+        public DoubleValue(double i) : base(i) { }
     }
 }

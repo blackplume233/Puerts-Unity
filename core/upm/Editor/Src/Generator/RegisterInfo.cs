@@ -4,7 +4,6 @@
 * Puerts is licensed under the BSD 3-Clause License, except for the third-party components listed in the file 'LICENSE' which may be subject to their corresponding license terms. 
 * This file is subject to the terms and conditions defined in file 'LICENSE', which is part of this source code package.
 */
-
 using Puerts.TypeMapping;
 using System.Reflection;
 using System.Collections.Generic;
@@ -29,8 +28,8 @@ namespace Puerts.Editor
             new public string PropertyGetter;
 
             new public string PropertySetter;
-        }
 
+        }
         internal class RegisterInfoForGenerate : RegisterInfo
         {
             public Type Type;
@@ -39,11 +38,11 @@ namespace Puerts.Editor
 
             public new List<MemberRegisterInfoForGenerate> Members;
         }
-
         internal class RegisterInfoGenerator
         {
             private class MRICollector
             {
+
                 private Dictionary<string, MemberRegisterInfoForGenerate> Collector = new Dictionary<string, MemberRegisterInfoForGenerate>();
                 private Dictionary<string, MemberRegisterInfoForGenerate> CollectorStatic = new Dictionary<string, MemberRegisterInfoForGenerate>();
 
@@ -72,7 +71,9 @@ namespace Puerts.Editor
             {
                 BindingFlags flag = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public;
 
-                return genTypes
+                return genTypes.Where(type => 
+                        !(type.IsEnum || type.IsArray || (Generator.Utils.IsDelegate(type) && type != typeof(Delegate)))
+                    )
                     .Select(type =>
                     {
                         var Collector = new MRICollector();
@@ -91,14 +92,14 @@ namespace Puerts.Editor
                         }
 
                         foreach (var m in Puerts.Utils.GetMethodAndOverrideMethod(type, flag)
-                                     .Where(m => !Utils.IsNotSupportedMember(m))
-                                     .Where(m => Puerts.Utils.IsNotGenericOrValidGeneric(m))
-                                     .ToArray()
-                                )
+                                    .Where(m => !Utils.IsNotSupportedMember(m))
+                                    .Where(m => Puerts.Utils.IsNotGenericOrValidGeneric(m))
+                                    .ToArray()
+                        )
                         {
                             if (m.DeclaringType == type && m.IsSpecialName && m.Name.StartsWith("op_") && m.IsStatic)
                             {
-                                if (m.Name == "op_Explicit" || m.Name == "op_Implicit") return null;
+                                if (m.Name == "op_Explicit" || m.Name == "op_Implicit") continue;
                                 Collector.Add(m.Name, new MemberRegisterInfoForGenerate
                                 {
                                     Name = m.Name,
@@ -111,6 +112,7 @@ namespace Puerts.Editor
                             }
                             else if (!m.IsSpecialName)
                             {
+
                                 Collector.Add(m.Name, new MemberRegisterInfoForGenerate
                                 {
                                     Name = m.Name,
@@ -124,15 +126,15 @@ namespace Puerts.Editor
                         }
 
                         foreach (var m in Puerts
-                                     .Editor
-                                     .Generator
-                                     .Utils
-                                     .GetExtensionMethods(type, new HashSet<Type>(genTypes))
-                                     .Where(m => !Utils.IsNotSupportedMember(m))
-                                     .Where(m => !m.IsGenericMethodDefinition || Puerts.Utils.IsNotGenericOrValidGeneric(m)).ToArray()
-                                     .Where(m => genTypes == null ? true : genTypes.Contains(m.DeclaringType))
-                                     .ToArray()
-                                )
+                                    .Editor
+                                    .Generator
+                                    .Utils
+                                    .GetExtensionMethods(type, new HashSet<Type>(genTypes))
+                                    .Where(m => !Utils.IsNotSupportedMember(m))
+                                    .Where(m => !m.IsGenericMethodDefinition || Puerts.Utils.IsNotGenericOrValidGeneric(m)).ToArray()
+                                    .Where(m => genTypes == null ? true : genTypes.Contains(m.DeclaringType))
+                                    .ToArray()
+                        )
                         {
                             Collector.Add(m.Name, new MemberRegisterInfoForGenerate
                             {
@@ -146,10 +148,10 @@ namespace Puerts.Editor
                         }
 
                         foreach (var m in type
-                                     .GetEvents(Utils.Flags)
-                                     .Where(m => !Utils.IsNotSupportedMember(m))
-                                     .ToArray()
-                                )
+                                    .GetEvents(Utils.Flags)
+                                    .Where(m => !Utils.IsNotSupportedMember(m))
+                                    .ToArray()
+                        )
                         {
                             var addMethod = m.GetAddMethod();
                             var removeMethod = m.GetRemoveMethod();
@@ -166,7 +168,6 @@ namespace Puerts.Editor
                                     Method = "A_" + m.Name,
                                 }, false);
                             }
-
                             if (removeMethod != null && removeMethod.IsPublic)
                             {
                                 Collector.Add("remove_" + m.Name, new MemberRegisterInfoForGenerate
@@ -182,10 +183,10 @@ namespace Puerts.Editor
                         }
 
                         foreach (var m in type
-                                     .GetProperties(flag)
-                                     .Where(m => !Utils.IsNotSupportedMember(m))
-                                     .ToArray()
-                                )
+                                    .GetProperties(flag)
+                                    .Where(m => !Utils.IsNotSupportedMember(m))
+                                    .ToArray()
+                        )
                         {
                             if (m.GetIndexParameters().GetLength(0) == 1)
                             {
@@ -203,7 +204,6 @@ namespace Puerts.Editor
                                         Method = "GetItem",
                                     }, false);
                                 }
-
                                 if (setMethod != null && setMethod.IsPublic)
                                 {
                                     Collector.Add("set_Item", new MemberRegisterInfoForGenerate
@@ -219,6 +219,7 @@ namespace Puerts.Editor
                             }
                             else if (m.GetIndexParameters().GetLength(0) != 1 && !m.IsSpecialName)
                             {
+
                                 Collector.Add(m.Name, new MemberRegisterInfoForGenerate
                                 {
                                     Name = m.Name,
@@ -233,10 +234,10 @@ namespace Puerts.Editor
                         }
 
                         foreach (var m in type
-                                     .GetFields(flag)
-                                     .Where(f => !Utils.IsNotSupportedMember(f))
-                                     .ToArray()
-                                )
+                            .GetFields(flag)
+                            .Where(f => !Utils.IsNotSupportedMember(f))
+                            .ToArray()
+                        )
                         {
                             Collector.Add(m.Name, new MemberRegisterInfoForGenerate
                             {

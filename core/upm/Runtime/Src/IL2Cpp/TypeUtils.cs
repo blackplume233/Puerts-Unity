@@ -15,8 +15,8 @@ using System.Runtime.CompilerServices;
 
 namespace PuertsIl2cpp
 {
-    public static class ExtensionMethodInfo
-    {
+	public static class ExtensionMethodInfo
+	{
         private static Type GetExtendedType(MethodInfo method)
         {
             var type = method.GetParameters()[0].ParameterType;
@@ -30,14 +30,12 @@ namespace PuertsIl2cpp
                 throw new InvalidOperationException();
             return firstParameterConstraint;
         }
-
+        
         // Call By Gen Code
         public static IEnumerable<MethodInfo> GetExtensionMethods(Type type, params Type[] extensions)
         {
-            return from e in extensions
-                from m in e.GetMethods(BindingFlags.Static | BindingFlags.Public)
-                where GetExtendedType(m) == type
-                select m;
+            return from e in extensions from m in e.GetMethods(BindingFlags.Static | BindingFlags.Public) 
+                where GetExtendedType(m) == type select m;
         }
 
         public static IEnumerable<MethodInfo> Get(Type type)
@@ -49,21 +47,20 @@ namespace PuertsIl2cpp
 
         public static Func<Type, IEnumerable<MethodInfo>> LoadExtensionMethod;
 
-        public static bool LoadExtensionMethodInfo()
-        {
+        public static bool LoadExtensionMethodInfo() {
             var ExtensionMethodInfos_Gen = (from assembly in AppDomain.CurrentDomain.GetAssemblies()
                 select assembly.GetType("PuertsIl2cpp.ExtensionMethodInfos_Gen")).FirstOrDefault(x => x != null);
             if (ExtensionMethodInfos_Gen == null)
                 ExtensionMethodInfos_Gen = (from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                    select assembly.GetType("PuertsIl2cpp.ExtensionMethodInfos_Gen_Internal")).FirstOrDefault(x => x != null);
+                select assembly.GetType("PuertsIl2cpp.ExtensionMethodInfos_Gen_Internal")).FirstOrDefault(x => x != null);
             var TryLoadExtensionMethod = ExtensionMethodInfos_Gen.GetMethod("TryLoadExtensionMethod");
             if (TryLoadExtensionMethod == null) return false;
             LoadExtensionMethod = (Func<Type, IEnumerable<MethodInfo>>)Delegate.CreateDelegate(
                 typeof(Func<Type, IEnumerable<MethodInfo>>), null, TryLoadExtensionMethod);
             return true;
         }
-    }
-
+	}
+	
     public static class TypeUtils
     {
         public class TypeSignatures
@@ -89,7 +86,6 @@ namespace PuertsIl2cpp
             public static string StructPrefix = "S_";
             public static string NullableStructPrefix = "N_";
         }
-
         private static Type GetType(string className, bool isQualifiedName)
         {
             Type type = Type.GetType(className, false);
@@ -97,7 +93,6 @@ namespace PuertsIl2cpp
             {
                 return type;
             }
-
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 type = assembly.GetType(className);
@@ -107,7 +102,6 @@ namespace PuertsIl2cpp
                     return type;
                 }
             }
-
             int p1 = className.IndexOf('[');
             if (p1 > 0 && !isQualifiedName)
             {
@@ -120,19 +114,15 @@ namespace PuertsIl2cpp
                     {
                         return null;
                     }
-
                     if (i != 0)
                     {
                         qualified_name += ", ";
                     }
-
                     qualified_name = qualified_name + "[" + generic_param.AssemblyQualifiedName + "]";
                 }
-
                 qualified_name += "]";
                 return GetType(qualified_name, true);
             }
-
             return null;
         }
 
@@ -147,18 +137,23 @@ namespace PuertsIl2cpp
             {
                 throw new Exception(type + " is not a valuetype");
             }
-
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
             if (type.BaseType.IsValueType)
             {
                 sb.Append(GetTypeSignature(type.BaseType));
             }
-
             foreach (var field in type.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
             {
-                sb.Append(GetTypeSignature(field.FieldType));
+                // special handling circular definition by pointer
+                if (
+                    (field.FieldType.IsByRef || field.FieldType.IsPointer) &&
+                    field.FieldType.GetElementType() == type
+                ) {
+                    sb.Append("Pv");
+                } 
+                else
+                    sb.Append(GetTypeSignature(field.FieldType));
             }
-
             return sb.ToString();
         }
 
@@ -250,12 +245,11 @@ namespace PuertsIl2cpp
             else if (type.IsValueType && !type.IsPrimitive)
             {
                 //return "s" + Marshal.SizeOf(type);
-                if (Nullable.GetUnderlyingType(type) != null)
+                if (Nullable.GetUnderlyingType(type) != null) 
                     return TypeSignatures.NullableStructPrefix + GetValueTypeFieldsSignature(type) + "_";
-                else
+                else 
                     return TypeSignatures.StructPrefix + GetValueTypeFieldsSignature(type) + "_";
             }
-
             throw new NotSupportedException("no support type: " + type);
         }
 
@@ -271,7 +265,7 @@ namespace PuertsIl2cpp
             {
                 return "D" + GetTypeSignature(parameterInfo.ParameterType);
             }
-
+            
             return GetTypeSignature(parameterInfo.ParameterType);
         }
 
@@ -290,10 +284,8 @@ namespace PuertsIl2cpp
                     return methodBase.DeclaringType == typeof(object) ? "T" : "t";
                 }
             }
-
             return "";
         }
-
         public static string GetMethodSignature(MethodBase methodBase, bool isDelegateInvoke = false, bool isExtensionMethod = false)
         {
             string signature = "";
@@ -323,6 +315,7 @@ namespace PuertsIl2cpp
                         signature += GetParameterSignature(parameterInfos[i]);
                     }
                 }
+
             }
 
             // UnityEngine.Debug.Log("GetMethodSignature " + methodBase.DeclaringType + "." + methodBase.Name + "->" + signature);
@@ -345,7 +338,6 @@ namespace PuertsIl2cpp
                     types.Add(returnType);
                 }
             }
-
             types.AddRange(methodBase.GetParameters().Skip(isExtensionMethod ? 1 : 0).Select(m => m.ParameterType.IsByRef ? m.ParameterType.GetElementType() : m.ParameterType).Where(TypeInfoPassToJsFilter));
             return types;
         }
@@ -358,17 +350,14 @@ namespace PuertsIl2cpp
                 {
                     return null;
                 }
-
                 var genericArguments = method.GetGenericArguments();
                 var constraintedArgumentTypes = new Type[genericArguments.Length];
                 for (var j = 0; j < genericArguments.Length; j++)
                 {
                     constraintedArgumentTypes[j] = genericArguments[j].BaseType;
                 }
-
                 method = method.MakeGenericMethod(constraintedArgumentTypes);
             }
-
             return method;
         }
 
@@ -380,14 +369,13 @@ namespace PuertsIl2cpp
 
             List<Type> validGenericParameter = new List<Type>();
 
-            if (pinfos == null) pinfos = method.GetParameters();
+            if (pinfos == null) pinfos = method.GetParameters(); 
             foreach (var parameters in pinfos)
             {
                 Type parameterType = parameters.ParameterType;
 
-                if (!HasValidContraint(parameterType, validGenericParameter))
-                {
-                    return false;
+                if (!HasValidContraint(parameterType, validGenericParameter)) { 
+                    return false; 
                 }
             }
 

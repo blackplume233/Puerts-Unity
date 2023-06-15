@@ -20,7 +20,6 @@ namespace Puerts
         bool FileExists(string filepath);
         string ReadFile(string filepath, out string debugpath);
     }
-
     public interface IModuleChecker
     {
         bool IsESM(string filepath);
@@ -41,6 +40,7 @@ namespace Puerts
     {
         void OnBuiltinLoaded(JsEnv env);
     }
+
 
 
 #if ENABLE_IL2CPP
@@ -67,14 +67,13 @@ namespace Puerts
 
         private string PathToUse(string filepath)
         {
-            return
-                // .cjs asset is only supported in unity2018+
+            return 
+            // .cjs asset is only supported in unity2018+
 #if UNITY_2018_1_OR_NEWER
-                filepath.EndsWith(".cjs") || filepath.EndsWith(".mjs")
-                    ? filepath.Substring(0, filepath.Length - 4)
-                    :
+            filepath.EndsWith(".cjs") || filepath.EndsWith(".mjs")  ? 
+                filepath.Substring(0, filepath.Length - 4) : 
 #endif
-                    filepath;
+                filepath;
         }
 
 #if ENABLE_IL2CPP
@@ -84,7 +83,7 @@ namespace Puerts
         {
 #if PUERTS_GENERAL
             return File.Exists(Path.Combine(root, filepath));
-#else
+#else 
             string pathToUse = this.PathToUse(filepath);
             bool exist = UnityEngine.Resources.Load(pathToUse) != null;
 #if !PUERTS_GENERAL && UNITY_EDITOR && !UNITY_2018_1_OR_NEWER
@@ -105,10 +104,10 @@ namespace Puerts
 #if PUERTS_GENERAL
             debugpath = Path.Combine(root, filepath);
             return File.ReadAllText(debugpath);
-#else
+#else 
             string pathToUse = this.PathToUse(filepath);
             UnityEngine.TextAsset file = (UnityEngine.TextAsset)UnityEngine.Resources.Load(pathToUse);
-
+            
             debugpath = System.IO.Path.Combine(root, filepath);
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
             debugpath = debugpath.Replace("/", "\\");
@@ -117,8 +116,8 @@ namespace Puerts
 #endif
         }
 
-
-        public bool IsESM(string filepath)
+        
+        public bool IsESM(string filepath) 
         {
             return filepath.Length >= 4 && !filepath.EndsWith(".cjs");
         }

@@ -18,24 +18,21 @@ namespace Puerts
     {
         private Dictionary<IntPtr, WeakReference> nativePtrToJSObject = new Dictionary<IntPtr, WeakReference>();
 
-        public JSObject GetOrCreateJSObject(IntPtr ptr, JsEnv jsEnv)
+        public JSObject GetOrCreateJSObject(IntPtr ptr, JsEnv jsEnv) 
         {
             WeakReference maybeOne;
             if (nativePtrToJSObject.TryGetValue(ptr, out maybeOne) && maybeOne.IsAlive)
             {
-                return maybeOne.Target as JSObject;
+               return maybeOne.Target as JSObject;
             }
-
             JSObject jsObject = new JSObject(ptr, jsEnv);
             nativePtrToJSObject[ptr] = new WeakReference(jsObject);
             return jsObject;
         }
 
-        public void RemoveJSObject(IntPtr ptr)
-        {
+        public void RemoveJSObject(IntPtr ptr) {
             WeakReference maybeOne;
-            if (nativePtrToJSObject.TryGetValue(ptr, out maybeOne) && !maybeOne.IsAlive)
-            {
+            if (nativePtrToJSObject.TryGetValue(ptr, out maybeOne) && ! maybeOne.IsAlive) {
                 nativePtrToJSObject.Remove(ptr);
             }
         }
@@ -45,6 +42,7 @@ namespace Puerts
             WeakReference maybeOne;
             return nativePtrToJSObject.TryGetValue(ptr, out maybeOne) && maybeOne.IsAlive;
         }
+
     }
 
     public class JSObject
@@ -53,8 +51,7 @@ namespace Puerts
 
         private IntPtr nativeJsObjectPtr;
 
-        public IntPtr getJsObjPtr()
-        {
+        public IntPtr getJsObjPtr() {
             return nativeJsObjectPtr;
         }
 
@@ -65,24 +62,12 @@ namespace Puerts
             jsEnv.IncJSObjRef(nativeJsObjectPtr);
         }
 
-        // Func<JSObject, string, object> MemberGetter;
-        // public T Get<T>(string key) 
-        // {
-        //     if (MemberGetter == null) 
-        //     {
-        //         MemberGetter = jsEnv.Eval<Func<JSObject, string, object>>("(function(obj, key) { return obj[key] })");
-        //     }
-        //     object value = MemberGetter(this, key);
+        public T Get<T>(string key) 
+        {
+            return jsEnv.JSObjectValueGetter.Func<JSObject, string, T>(this, key);
+        }
 
-        //     Type maybeDelegateType = typeof(T);
-        //     if (typeof(Delegate).IsAssignableFrom(typeof(T))) {
-        //         return (T)(object)jsEnv.genericDelegateFactory.Create(typeof(T), (IntPtr)value);
-        //     }
-
-        //     return (T)value;
-        // }
-
-        ~JSObject()
+        ~JSObject() 
         {
 #if THREAD_SAFE
             lock(jsEnv) 
@@ -94,6 +79,7 @@ namespace Puerts
 #endif
         }
     }
+
 }
 
 #endif

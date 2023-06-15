@@ -37,9 +37,7 @@ namespace Puerts
                 Utils.LongToTwoInt(data, out jsEnvIdx, out callbackIdx);
                 JsEnv.jsEnvs[jsEnvIdx].JsReleaseObject(self.ToInt32());
             }
-            catch
-            {
-            }
+            catch {}
         }
 
         [MonoPInvokeCallback(typeof(V8ConstructorCallback))]

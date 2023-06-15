@@ -24,6 +24,10 @@ namespace Typescript.Runtime
             }
         }
 
+        public static HashSet<string> ExcludeAssemblies = new HashSet<string>()
+        {
+            "unityplastic"
+        };
         public static List<Type> FindAllType()
         {
             List<Type> allTypes = new List<Type>();
@@ -31,8 +35,20 @@ namespace Typescript.Runtime
 
             foreach (Assembly assembly in assemblies)
             {
+                if (ExcludeAssemblies.Contains(assembly.GetName().Name))
+                {
+                    continue;
+                }
+                
                 Type[] types = assembly.GetTypes();
-                allTypes.AddRange(types);
+                foreach (var type in types)
+                {
+                    if (!type.FullName.Contains("=") && !type.FullName.Contains("__"))
+                    {
+                        allTypes.Add(type);
+                    }
+                    
+                }
             }
 
             return allTypes;

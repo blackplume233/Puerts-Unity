@@ -14,21 +14,16 @@ namespace Puerts
     {
         private static char SLASH = (char)47;
         private static char DOT = (char)46;
-
         public static bool IsRelative(string filepath)
         {
-            if (filepath[0] == '.')
-            {
+            if (filepath[0] == '.') {
                 if (filepath.Length == 1 || filepath[1] == '/') return true;
-                if (filepath[1] == '.')
-                {
+                if (filepath[1] == '.') {
                     if (filepath.Length == 2 || filepath[2] == '/') return true;
                 }
             }
-
             return false;
         }
-
         public static string Dirname(string filepath)
         {
             if (filepath.Length == 0) return ".";
@@ -58,7 +53,7 @@ namespace Puerts
             if (hasRoot && end == 1) return "//";
             return filepath.Substring(0, end);
         }
-
+        
         protected static string posixNormalize(string path, bool allowAboveRoot)
         {
             string res = "";
@@ -81,7 +76,6 @@ namespace Puerts
                 {
                     code = '/';
                 }
-
                 if (code == '/')
                 {
                     if (lastSlash == i - 1 || dots == 1)
@@ -112,7 +106,6 @@ namespace Puerts
                                         res = res.Substring(0, lastSlashIndex);
                                         lastSegmentLength = res.Length - 1 - res.LastIndexOf('/');
                                     }
-
                                     lastSlash = i;
                                     dots = 0;
                                     continue;
@@ -127,7 +120,6 @@ namespace Puerts
                                 continue;
                             }
                         }
-
                         if (allowAboveRoot)
                         {
                             if (res.Length > 0)
@@ -138,7 +130,6 @@ namespace Puerts
                             {
                                 res = "..";
                             }
-
                             lastSegmentLength = 2;
                         }
                     }
@@ -152,10 +143,8 @@ namespace Puerts
                         {
                             res = path.Substring(lastSlash + 1, i - (lastSlash + 1));
                         }
-
                         lastSegmentLength = i - lastSlash - 1;
                     }
-
                     lastSlash = i;
                     dots = 0;
                 }
@@ -171,7 +160,7 @@ namespace Puerts
 
             return res;
         }
-
+        
         protected static string decode(string s)
         {
             try
@@ -204,12 +193,10 @@ namespace Puerts
             {
                 path = ".";
             }
-
             if (path.Length > 0 && trailingSeparator)
             {
                 path += "/";
             }
-
             if (isAbsolute)
             {
                 return "/" + path;
@@ -218,7 +205,7 @@ namespace Puerts
             return path;
         }
 
-
+        
         internal static string JSCode = @"
     var global = this;
     (function() {

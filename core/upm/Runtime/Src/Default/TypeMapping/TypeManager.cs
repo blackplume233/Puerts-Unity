@@ -19,10 +19,7 @@ namespace Puerts
     {
         internal class GenericWrapperTree
         {
-            private class NativeObjectType
-            {
-            }
-
+            private class NativeObjectType {}
             private class Node
             {
                 public Type WrapperTypeDefinition;
@@ -35,7 +32,7 @@ namespace Puerts
             public static Type FindWrapperDefinition(Type genericType)
             {
                 Type typeDefinition = genericType.GetGenericTypeDefinition();
-                if (!definitionTypeNodes.ContainsKey(typeDefinition))
+                if (!definitionTypeNodes.ContainsKey(typeDefinition)) 
                 {
                     return null;
                 }
@@ -46,42 +43,36 @@ namespace Puerts
                 {
                     Type type = type_;
                     if (type == null) type = typeof(NativeObjectType);
-                    if (!node.Branchs.ContainsKey(type))
+                    if (!node.Branchs.ContainsKey(type)) 
                     {
                         return null;
                     }
-
                     node = node.Branchs[type];
                 }
-
                 return node.WrapperTypeDefinition;
             }
-
             public static void AddWrapperTypeDefinition(Type typeDefinition, Type[] genericArgumentsType, Type wrapperTypeDefinition)
             {
                 Node node;
-                if (!definitionTypeNodes.ContainsKey(typeDefinition))
+                if (!definitionTypeNodes.ContainsKey(typeDefinition)) 
                 {
                     node = new Node();
                     definitionTypeNodes.Add(typeDefinition, node);
-                }
-                else
+                } 
+                else 
                 {
                     node = definitionTypeNodes[typeDefinition];
                 }
-
                 foreach (Type type_ in genericArgumentsType)
                 {
                     Type type = type_;
                     if (type == null) type = typeof(NativeObjectType);
-                    if (!node.Branchs.ContainsKey(type))
+                    if (!node.Branchs.ContainsKey(type)) 
                     {
                         node.Branchs.Add(type, new Node());
                     }
-
                     node = node.Branchs[type];
                 }
-
                 node.WrapperTypeDefinition = wrapperTypeDefinition;
             }
         }
@@ -182,7 +173,6 @@ namespace Puerts
             {
                 return type;
             }
-
             foreach (Assembly assembly in assemblies)
             {
                 type = assembly.GetType(className);
@@ -192,7 +182,6 @@ namespace Puerts
                     return type;
                 }
             }
-
             int p1 = className.IndexOf('[');
             if (p1 > 0 && !isQualifiedName)
             {
@@ -205,22 +194,18 @@ namespace Puerts
                     {
                         return null;
                     }
-
                     if (i != 0)
                     {
                         qualified_name += ", ";
                     }
-
                     qualified_name = qualified_name + "[" + generic_param.AssemblyQualifiedName + "]";
                 }
-
                 qualified_name += "]";
                 return GetType(qualified_name, true);
             }
-
             return null;
         }
-
+        
         private readonly Dictionary<Type, int> typeIdMap = new Dictionary<Type, int>();
 
         private readonly Dictionary<int, Type> typeMap = new Dictionary<int, Type>();
@@ -236,7 +221,6 @@ namespace Puerts
                 isFirst = false;
                 return arrayTypeId;
             }
-
             int typeId;
             isFirst = false;
             if (!typeIdMap.TryGetValue(type, out typeId))
@@ -247,12 +231,11 @@ namespace Puerts
                 {
                     baseTypeId = GetTypeId(isolate, type.BaseType);
                 }
-
+                
                 typeId = TypeRegister.RegisterType(type, baseTypeId, false);
                 typeIdMap[type] = typeId;
                 typeMap[typeId] = type;
             }
-
             return typeId;
         }
 
@@ -269,11 +252,9 @@ namespace Puerts
 
         public Type GetType(int typeId)
         {
-            if (typeId == arrayTypeId)
-            {
+            if (typeId == arrayTypeId) {
                 return typeof(System.Array);
             }
-
             return typeMap[typeId];
         }
     }

@@ -18,7 +18,6 @@ namespace Puerts
         {
             return object.ReferenceEquals(o1, o2);
         }
-
         public int GetHashCode(object obj)
         {
             return System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
@@ -31,7 +30,6 @@ namespace Puerts
         const int SHIFT_BIT = 1;
         const int LIST_END = -1;
         const int ALLOCED = -2;
-
         struct Slot
         {
             public int next;
@@ -70,7 +68,6 @@ namespace Puerts
             {
                 new_list[i] = list[i];
             }
-
             list = new_list;
         }
 
@@ -82,7 +79,6 @@ namespace Puerts
             {
                 id = Add(obj);
             }
-
             return id << SHIFT_BIT;
         }
 
@@ -115,7 +111,6 @@ namespace Puerts
                 {
                     ExtendCapacity();
                 }
-
                 index = count;
                 list[index] = new Slot(ALLOCED, obj);
                 count = index + 1;
@@ -144,7 +139,6 @@ namespace Puerts
             {
                 return list[index].obj;
             }
-
             return null;
         }
 
@@ -163,7 +157,6 @@ namespace Puerts
                 {
                     reverseMap.Remove(o);
                 }
-
                 return o;
             }
 
@@ -205,7 +198,6 @@ namespace Puerts
             {
                 return 0;
             }
-
             for (int i = 0; i < Math.Min(maxCheck, count); ++i)
             {
                 checkPos %= count;
@@ -216,7 +208,6 @@ namespace Puerts
                         ReleaseObjectRefInner(checkPos);
                     }
                 }
-
                 ++checkPos;
             }
 
@@ -226,3 +217,4 @@ namespace Puerts
 }
 
 #endif
+

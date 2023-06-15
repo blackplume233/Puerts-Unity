@@ -11,7 +11,6 @@ namespace Puerts
     public class Backend
     {
         protected JsEnv env;
-
         public Backend(JsEnv env)
         {
             this.env = env;
@@ -77,6 +76,7 @@ namespace Puerts
             }
 #endif
         }
+
     }
 
     public class BackendNodeJS : BackendV8

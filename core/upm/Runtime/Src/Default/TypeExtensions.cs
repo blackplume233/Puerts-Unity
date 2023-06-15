@@ -127,7 +127,7 @@ namespace Puerts
             return type.IsNestedPublic;
 #else
             return type.GetTypeInfo().IsNestedPublic;
-#endif
+#endif        
         }
 
         internal static bool IsPublic(this Type type)
@@ -136,7 +136,7 @@ namespace Puerts
             return type.IsPublic;
 #else
             return type.GetTypeInfo().IsPublic;
-#endif
+#endif        
         }
 
         internal static bool IsStruct(this Type type)
@@ -205,12 +205,11 @@ namespace Puerts
             }
             else if (type.IsNested)
             {
-                if (type.DeclaringType.IsNested)
-                {
-                    if (type.DeclaringType.IsGenericTypeDefinition)
-                        return GetFriendlyName(type.DeclaringType, type.GetGenericArguments()) + '.' + type.Name;
-                    else
-                        return GetFriendlyName(type.DeclaringType) + '.' + type.Name;
+                if (type.DeclaringType.IsNested) {
+                    if (type.DeclaringType.IsGenericTypeDefinition) 
+                        return GetFriendlyName(type.DeclaringType, type.GetGenericArguments())+ '.' + type.Name;
+                    else 
+                        return GetFriendlyName(type.DeclaringType)+ '.' + type.Name;
                 }
                 else if (type.DeclaringType.IsGenericTypeDefinition)
                 {

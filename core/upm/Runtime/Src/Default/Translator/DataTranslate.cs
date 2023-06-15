@@ -180,7 +180,6 @@ namespace Puerts
                             return generalGetterMap[objType](jsEnvIdx, isolate, getValueApi, value, isByRef);
                         }
                     }
-
                     var objPtr = getValueApi.GetNativeObject(isolate, value, isByRef);
                     var result = jsEnv.objectPool.Get(objPtr.ToInt32());
 
@@ -225,7 +224,6 @@ namespace Puerts
                     var obj = JsEnv.jsEnvs[jsEnvIdx].objectPool.Get(objPtr.ToInt32());
                     return (obj != null && type.IsAssignableFrom(obj.GetType())) ? obj : null;
                 }
-
                 return null;
             };
 
@@ -242,7 +240,6 @@ namespace Puerts
                         {
                             throw new Exception("can not find delegate bridge for " + type.GetFriendlyName() + ", Please use JsEnv.UsingAction() Or JsEnv.UsingFunc() following the FAQ.");
                         }
-
                         return result;
                     }
                     else
@@ -268,7 +265,6 @@ namespace Puerts
                     jvt = MakeNullableTranslateFunc(GetTranslateFunc(underlyingType));
                     nullableTypeGeneralGetterMap.Add(underlyingType, jvt);
                 }
-
                 return jvt;
             }
             else
@@ -277,14 +273,12 @@ namespace Puerts
                 {
                     return GetTranslateFunc(Enum.GetUnderlyingType(type));
                 }
-
                 GeneralGetter jvt;
                 if (!generalGetterMap.TryGetValue(type, out jvt))
                 {
                     jvt = MakeTranslateFunc(type);
                     generalGetterMap.Add(type, jvt);
                 }
-
                 return jvt;
             }
         }
@@ -324,7 +318,7 @@ namespace Puerts
             //{ typeof(decimal), JsValueType.Number }, TODO: 把decimal by value 传递到js
             { typeof(bool), JsValueType.Boolean },
             { typeof(string), JsValueType.String | JsValueType.NullOrUndefined },
-            { typeof(object), JsValueType.Any }
+            { typeof(object), JsValueType.Any}
         };
 
         public static JsValueType GetJsTypeMask(Type type)
@@ -376,7 +370,7 @@ namespace Puerts
             }
             else if (type.IsValueType())
             {
-                mask = JsValueType.NativeObject /* | JsValueType.JsObject*/; //TODO: 支持js对象到C#对象静默转换
+                mask = JsValueType.NativeObject/* | JsValueType.JsObject*/; //TODO: 支持js对象到C#对象静默转换
             }
             else
             {
@@ -583,7 +577,6 @@ namespace Puerts
                 jvt = MakeTranslateFunc(type);
                 generalSetterMap.Add(type, jvt);
             }
-
             return jvt;
         }
 

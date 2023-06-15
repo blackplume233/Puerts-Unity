@@ -1,7 +1,7 @@
-module DebugContext{
+namespace DebugContext{
     export function OnUpdate() {
         console.log("Test")
-        //console.log("Test HotReload")
+        console.log("Test HotReload")
     }
 }
 export default DebugContext;

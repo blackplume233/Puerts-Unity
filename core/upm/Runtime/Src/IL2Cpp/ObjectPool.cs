@@ -6,6 +6,7 @@
 */
 
 #if EXPERIMENTAL_IL2CPP_PUERTS && ENABLE_IL2CPP
+
 namespace PuertsIl2cpp
 {
     public class ObjectPool

@@ -42,7 +42,6 @@ public class U2018Compatible
                 }
             }
         }
-
         if (memberInfo.DeclaringType.IsGenericType && memberInfo.DeclaringType.GetGenericTypeDefinition() == typeof(HashSet<>))
         {
             if (memberInfo.MemberType == MemberTypes.Constructor)
@@ -63,17 +62,14 @@ public class U2018Compatible
                 }
             }
         }
-
         if (memberInfo.DeclaringType.ToString() == "System.Type" && memberInfo.Name == "IsSZArray")
         {
             return BindingMode.DontBinding;
         }
-
         if (memberInfo.DeclaringType.ToString() == "System.Threading.Tasks.Task" && memberInfo.Name == "IsCompletedSuccessfully")
         {
             return BindingMode.DontBinding;
         }
-
         return BindingMode.FastBinding;
     }
 #endif

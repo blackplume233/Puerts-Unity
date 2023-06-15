@@ -38,7 +38,7 @@ namespace Puerts
             Values = new object[Length];
             NativePtrs = new IntPtr[Length];
 
-            for (int i = 0; i < Length; i++)
+            for(int i = 0; i < Length; i++)
             {
                 var nativeValuePtr = PuertsDLL.GetArgumentValue(info, i);
                 NativePtrs[i] = nativeValuePtr;
@@ -59,7 +59,7 @@ namespace Puerts
         private JsValueType[] paramJSTypeMasks = null;
 
         internal int optionalParamPos = 0;
-
+        
         private Type[] paramTypes = null;
 
         private object[] args = null;
@@ -74,7 +74,7 @@ namespace Puerts
 
 #if NET_2_0 || NET_2_0_SUBSET
         public object[] defaultValueArray;
-#endif
+#endif 
 
         public Parameters(ParameterInfo[] parameterInfos, JsEnv jsEnv)
         {
@@ -87,9 +87,9 @@ namespace Puerts
             byRefValueSetFuncs = new GeneralSetter[parameterInfos.Length];
             paramIsByRef = new bool[parameterInfos.Length];
             isOut = new bool[parameterInfos.Length];
-            optionalParamPos = this.paramLength;
+            optionalParamPos = this.paramLength; 
             List<object> defaultValueList = new List<object>();
-
+            
             for (int i = 0; i < parameterInfos.Length; i++)
             {
                 var parameterInfo = parameterInfos[i];
@@ -99,7 +99,6 @@ namespace Puerts
                     parameterType = parameterType.GetElementType();
                     hasParamsArray = true;
                 }
-
                 paramTypes[i] = parameterType.IsByRef ? parameterType.GetElementType() : parameterType;
                 paramJSTypeMasks[i] = GeneralGetterManager.GetJsTypeMask(parameterType);
                 argsTranslateFuncs[i] = jsEnv.GeneralGetterManager.GetTranslateFunc(parameterType);
@@ -108,7 +107,6 @@ namespace Puerts
                 {
                     byRefValueSetFuncs[i] = jsEnv.GeneralSetterManager.GetTranslateFunc(parameterType.GetElementType());
                 }
-
                 isOut[i] = parameterType.IsByRef && parameterInfo.IsOut && !parameterInfo.IsIn;
                 if (i < optionalParamPos && parameterInfo.IsOptional)
                 {
@@ -126,11 +124,11 @@ namespace Puerts
                     }
                 }
                 defaultValueList.Add(parameterInfo.IsOptional ? defaultValue : null);
-#endif
+#endif 
             }
 #if NET_2_0 || NET_2_0_SUBSET
             defaultValueArray = defaultValueList.ToArray();
-#endif
+#endif 
         }
 
         public bool IsMatch(JSCallInfo jsCallInfo)
@@ -162,7 +160,7 @@ namespace Puerts
                         {
                             return false;
                         }
-
+                        
                         if (isOut[i]) // 是out直接过
                         {
                             continue;
@@ -172,7 +170,6 @@ namespace Puerts
                             argJsType = PuertsDLL.GetJsValueType(jsCallInfo.Isolate, jsCallInfo.NativePtrs[i], true);
                         }
                     }
-
                     if (
                         !Utils.IsJsValueTypeMatchType(argJsType, paramTypes[i], paramJSTypeMasks[i], () =>
                         {
@@ -196,11 +193,11 @@ namespace Puerts
         {
             for (int i = 0; i < paramLength; i++)
             {
-                if (hasParamsArray && i == paramLength - 1)
+                if(hasParamsArray && i == paramLength - 1)
                 {
                     Array paramArray = Array.CreateInstance(paramTypes[paramLength - 1],
-                        callInfo.Length < paramLength ? 0 : (callInfo.Length + 1 - paramLength));
-
+                        callInfo.Length  < paramLength ? 0 : (callInfo.Length + 1 - paramLength));
+                    
                     var translateFunc = argsTranslateFuncs[i];
                     for (int j = i; j < callInfo.Length; j++)
                     {
@@ -210,8 +207,9 @@ namespace Puerts
                     }
 
                     args[i] = paramArray;
+                    
                 }
-                else if (i >= callInfo.Length && i >= optionalParamPos)
+				else if (i >= callInfo.Length && i >= optionalParamPos)
                 {
 #if NET_2_0 || NET_2_0_SUBSET
                     args[i] = defaultValueArray[i];
@@ -234,7 +232,6 @@ namespace Puerts
                     }
                 }
             }
-
             return args;
         }
 
@@ -277,7 +274,7 @@ namespace Puerts
         public OverloadReflectionWrap(MethodBase methodBase, JsEnv jsEnv, bool extensionMethod = false)
         {
             parameters = new Parameters(methodBase.GetParameters().Skip(extensionMethod ? 1 : 0).ToArray(), jsEnv);
-
+            
             this.extensionMethod = extensionMethod;
 
             if (methodBase.IsConstructor)
@@ -289,7 +286,6 @@ namespace Puerts
                 methodInfo = methodBase as MethodInfo;
                 resultSetter = jsEnv.GeneralSetterManager.GetTranslateFunc(methodInfo.ReturnType);
             }
-
             this.jsEnv = jsEnv;
         }
 
@@ -319,7 +315,6 @@ namespace Puerts
                 {
                     args = new object[] { jsEnv.GeneralGetterManager.GetSelf(jsEnv.Idx, jsCallInfo.Self) }.Concat(args).ToArray();
                 }
-
                 object ret = methodInfo.Invoke(target, args);
                 parameters.FillByRefParameters(jsCallInfo);
                 resultSetter(jsEnv.Idx, jsCallInfo.Isolate, NativeValueApi.SetValueToResult, jsCallInfo.Info, ret);
@@ -332,11 +327,10 @@ namespace Puerts
 
         public object Construct(JSCallInfo callInfo)
         {
-            if (constructorInfo == null && type != null)
+            if (constructorInfo == null && type != null) 
             {
                 return Activator.CreateInstance(type);
             }
-
             return constructorInfo.Invoke(parameters.GetArguments(callInfo));
         }
     }
@@ -373,13 +367,12 @@ namespace Puerts
                         }
                     }
                 }
-                catch (Exception e)
+                catch(Exception e)
                 {
                     PuertsDLL.ThrowException(isolate, "c# exception:" + e.Message + ",stack:" + e.StackTrace);
                     return null;
                 }
             }
-
             PuertsDLL.ThrowException(isolate, "invalid arguments to constructor of " + delegateType.GetFriendlyName());
             return null;
         }
@@ -402,12 +395,15 @@ namespace Puerts
             try
             {
                 JSCallInfo callInfo = new JSCallInfo(isolate, info, self, argumentsLen);
-                if (overloads.Count == 1 && overloads[0].parameters.optionalParamPos == overloads[0].parameters.paramLength)
-                {
+                if (
+                    overloads.Count == 1 && 
+                    overloads[0].parameters.optionalParamPos == overloads[0].parameters.paramLength &&
+                    overloads[0].parameters.paramLength == callInfo.Length
+                ) {
                     overloads[0].Invoke(callInfo);
                     return;
-                }
-                else
+                } 
+                else 
                 {
                     for (int i = 0; i < overloads.Count; ++i)
                     {
@@ -419,8 +415,7 @@ namespace Puerts
                         }
                     }
                 }
-
-                PuertsDLL.ThrowException(isolate, "invalid arguments to " + name);
+                PuertsDLL.ThrowException(isolate, "invalid arguments to " + name + " or the overload is striped by unity");
             }
             catch (TargetInvocationException e)
             {
@@ -446,8 +441,7 @@ namespace Puerts
                         return overload.Construct(jsCallInfo);
                     }
                 }
-
-                PuertsDLL.ThrowException(isolate, "invalid arguments to " + name);
+                PuertsDLL.ThrowException(isolate, "invalid arguments to " + name + " or the overload is striped by unity");
             }
             catch (TargetInvocationException e)
             {
@@ -457,7 +451,6 @@ namespace Puerts
             {
                 PuertsDLL.ThrowException(isolate, "c# exception:" + e.Message + ",stack:" + e.StackTrace);
             }
-
             return null;
         }
     }

@@ -25,21 +25,17 @@ namespace Puerts
 
         private static void DefaultPush(int jsEnvIdx, IntPtr isolate, ISetValueToJs setValueApi, IntPtr function, T o)
         {
-            if (Setter == null)
-            {
+            if (Setter == null) {
                 Setter = JsEnv.jsEnvs[jsEnvIdx].GeneralSetterManager.GetTranslateFunc(typeof(T));
             }
-
             Setter(jsEnvIdx, isolate, setValueApi, function, o);
         }
 
         private static T DefaultGetResult(int jsEnvIdx, IntPtr isolate, IGetValueFromJs getValueApi, IntPtr value, bool isByRef)
         {
-            if (Getter == null)
-            {
+            if (Getter == null) {
                 Getter = JsEnv.jsEnvs[jsEnvIdx].GeneralGetterManager.GetTranslateFunc(typeof(T));
             }
-
             var obj = Getter(jsEnvIdx, isolate, getValueApi, value, isByRef);
             if (obj == null)
             {
@@ -137,20 +133,21 @@ namespace Puerts
 
         public static long GetInt64(int jsEnvIdx, IntPtr isolate, IGetValueFromJs getValueApi, IntPtr holder, bool isByRef)
         {
-            if (getValueApi.GetJsValueType(isolate, holder, isByRef) == JsValueType.NativeObject)
+            if (getValueApi.GetJsValueType(isolate, holder, isByRef) == JsValueType.NativeObject) 
             {
                 IntPtr ptr = getValueApi.GetNativeObject(isolate, holder, isByRef);
                 object obj = JsEnv.jsEnvs[jsEnvIdx].objectPool.Get(ptr.ToInt32());
-                if (obj.GetType() == typeof(Int64Value))
+                if (obj.GetType() == typeof(Int64Value)) 
                 {
                     return (long)((Int64Value)obj).Target;
                 }
-                else
+                else 
                 {
                     throw new Exception("not a int64 value");
                 }
+
             }
-            else
+            else 
             {
                 return getValueApi.GetBigInt(isolate, holder, isByRef);
             }

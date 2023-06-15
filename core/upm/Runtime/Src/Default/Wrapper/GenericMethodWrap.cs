@@ -11,7 +11,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace Puerts
+namespace Puerts 
 {
     public class GenericMethodWrap
     {
@@ -21,7 +21,7 @@ namespace Puerts
         private Type[] genericArguments;
 
         public GenericMethodWrap(string memberName, JsEnv env, Type definitionType, Type[] genericArguments)
-        {
+        { 
             this.env = env;
             this.memberName = memberName;
             this.definitionType = definitionType;
@@ -37,14 +37,12 @@ namespace Puerts
                 if (reflectionWrap == null)
                 {
                     MethodInfo[] overload = Utils.GetMethodAndOverrideMethodByName(definitionType, memberName)
-                        .Where(item => item.IsGenericMethodDefinition && item.GetGenericArguments().Count() == genericArguments.Count())
-                        .Select(item => item.MakeGenericMethod(genericArguments))
+                        .Where(item=> item.IsGenericMethodDefinition && item.GetGenericArguments().Count() == genericArguments.Count())
+                        .Select(item=> item.MakeGenericMethod(genericArguments))
                         .ToArray();
-                    if (overload.Count() == 0)
-                    {
+                    if (overload.Count() == 0) {
                         throw new Exception("no suitable method found to make GenericMethodWrap");
                     }
-
                     reflectionWrap = new MethodReflectionWrap(memberName,
                         overload.Select(m => new OverloadReflectionWrap(m, env, false)).ToList()
                     );

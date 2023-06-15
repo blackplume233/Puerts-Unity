@@ -25,6 +25,7 @@ namespace Puerts
     [AttributeUsage(AttributeTargets.Class)]
     public class ConfigureAttribute : Attribute
     {
+
     }
 
     //代码生成目录
@@ -49,6 +50,7 @@ namespace Puerts
     [AttributeUsage(AttributeTargets.Property)]
     public class BlittableCopyAttribute : Attribute
     {
+
     }
 
     [AttributeUsage(AttributeTargets.Method)]
@@ -59,7 +61,8 @@ namespace Puerts
     public enum FilterAction
     {
         BindingMode = 1,
-        MethodInInstructions = 2
+        MethodInInstructions = 2,
+        DisallowedType = 3
     }
 
     public static class Configure
@@ -67,16 +70,16 @@ namespace Puerts
         public static Dictionary<string, List<KeyValuePair<object, int>>> GetConfigureByTags(List<string> tags)
         {
             var types = from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                where !(assembly.ManifestModule is System.Reflection.Emit.ModuleBuilder)
-                from type in assembly.GetTypes()
-                where type.IsDefined(typeof(ConfigureAttribute), false)
-                select type;
+                        where !(assembly.ManifestModule is System.Reflection.Emit.ModuleBuilder)
+                        from type in assembly.GetTypes()
+                        where type.IsDefined(typeof(ConfigureAttribute), false)
+                        select type;
             var tagsMap = tags.ToDictionary(t => t, t => new List<KeyValuePair<object, int>>());
 
-            foreach (var type in types)
+            foreach(var type in types)
             {
                 foreach (var prop in type.GetProperties(BindingFlags.Static | BindingFlags.Public
-                                                                            | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+                    | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
                 {
                     if (typeof(IEnumerable).IsAssignableFrom(prop.PropertyType))
                     {
@@ -88,7 +91,6 @@ namespace Puerts
                             {
                                 flag = (int)fp.GetValue(ca, null);
                             }
-
                             List<KeyValuePair<object, int>> infos;
                             if (tagsMap.TryGetValue(ca.GetType().ToString(), out infos))
                             {
@@ -101,43 +103,42 @@ namespace Puerts
                     }
                 }
             }
-
             return tagsMap;
         }
 
         public static List<MethodInfo> GetFilters()
         {
             var types = from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                where !(assembly.ManifestModule is System.Reflection.Emit.ModuleBuilder)
-                from type in assembly.GetTypes()
-                where type.IsDefined(typeof(ConfigureAttribute), false)
-                select type;
+                        where !(assembly.ManifestModule is System.Reflection.Emit.ModuleBuilder)
+                        from type in assembly.GetTypes()
+                        where type.IsDefined(typeof(ConfigureAttribute), false)
+                        select type;
 
             List<MethodInfo> filters = new List<MethodInfo>();
             foreach (var type in types)
             {
                 foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public
-                                                                           | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+                    | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
                 {
-                    if (method.IsDefined(typeof(FilterAttribute), false))
+                    if(method.IsDefined(typeof(FilterAttribute), false))
                     {
                         filters.Add(method);
                     }
                 }
             }
-
             return filters;
         }
 #if !PUERTS_GENERAL
         public static string GetCodeOutputDirectory()
         {
             var types = from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                where !(assembly.ManifestModule is System.Reflection.Emit.ModuleBuilder)
-                from type in assembly.GetTypes()
-                where type.IsDefined(typeof(ConfigureAttribute), false)
-                select type;
-            foreach (var type in types)
+                        where !(assembly.ManifestModule is System.Reflection.Emit.ModuleBuilder)
+                        from type in assembly.GetTypes()
+                        where type.IsDefined(typeof(ConfigureAttribute), false)
+                        select type;
+            foreach(var type in types)
             {
+
                 PropertyInfo[] props = type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
                 foreach (PropertyInfo prop in props)
                 {
@@ -152,7 +153,6 @@ namespace Puerts
                     }
                 }
             }
-
             return UnityEngine.Application.dataPath + "/Gen/";
         }
 #endif

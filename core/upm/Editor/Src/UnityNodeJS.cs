@@ -4,13 +4,12 @@
 * Puerts is licensed under the BSD 3-Clause License, except for the third-party components listed in the file 'LICENSE' which may be subject to their corresponding license terms. 
 * This file is subject to the terms and conditions defined in file 'LICENSE', which is part of this source code package.
 */
-
 #if !PUERTS_GENERAL
 using UnityEngine;
 using UnityEditor;
 using System;
 
-namespace Puerts.Editor
+namespace Puerts.Editor 
 {
     public class NodeRunner
     {
@@ -20,38 +19,37 @@ namespace Puerts.Editor
 
         private string ProjectPath;
 
+        
 
-        public NodeRunner(string ProjectPath = "")
+        public NodeRunner(string ProjectPath = "") 
         {
             UnityEngine.Debug.LogWarning("NodeRunner is still experimental and could be changed later");
-            if (ProjectPath == null || ProjectPath == "")
+            if (ProjectPath == null || ProjectPath == "") 
             {
                 this.ProjectPath = DefaultProjectPath;
             }
-            else
+            else 
             {
                 this.ProjectPath = ProjectPath;
             }
-
             EditorApplication.update += Update;
             env = new JsEnv();
         }
 
-        void Update()
+        void Update() 
         {
-            if (env != null)
-            {
+            if (env != null) {
                 env.Tick();
             }
         }
 
-        public T Run<T>(string Code)
+        public T Run<T>(string Code) 
         {
             if (env == null) env = new JsEnv();
-
+            
             EditorUtility.DisplayProgressBar("PuerNode", "Running in Puer-Project", 0);
             T ret = default(T);
-            try
+            try 
             {
                 ret = env.Eval<T>(String.Format(@"
                     global.__puerProjectRoot = '{0}';
@@ -77,12 +75,12 @@ namespace Puerts.Editor
             return ret;
         }
 
-        public void Run(string Code)
+        public void Run(string Code) 
         {
             if (env == null) env = new JsEnv();
             EditorUtility.DisplayProgressBar("PuerNode", "Running in Puer-Project", 0);
-            try
-            {
+            try 
+            { 
                 env.Eval(String.Format(@"
                     global.__puerProjectRoot = '{0}';
                     global.require = require('module').createRequire('{0}');
