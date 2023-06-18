@@ -1,13 +1,9 @@
 ﻿import { require } from "puerts";
-import DebugContext from "./Foudation/unity_editor_context.mjs";
+import GameGlobal from "./Foudation/unity_editor_context.mjs";
 console.log("Start Js Env");
                                                                                              
 function InitEnv(context: CS.Typescript.Runtime.JsContext) {
     console.log(context)
-    console.log(DebugContext.OnUpdate)
-    context.OnUpdate = () => {
-        DebugContext.OnUpdate()
-    }
+    GameGlobal.InitGlobalContext(context)
 }
-
 export default InitEnv
