@@ -1,8 +1,7 @@
 {
     "name": "com.tencent.puerts.ts-loader",
-    "rootNamespace": "",
     "references": [
-        "com.tencent.puerts.core"
+        "GUID:bcce1ec465fe0c74b95915ad5b03ac70"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
