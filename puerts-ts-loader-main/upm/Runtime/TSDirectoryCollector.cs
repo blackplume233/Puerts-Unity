@@ -43,17 +43,30 @@ namespace Puerts.TSLoader
 
         static TSDirectoryCollector() 
         {
-            var tsConfigList = AssetDatabase
-                .FindAssets("tsconfig t:textAsset")
-                .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
-                .Where(path=> path.Contains("/tsconfig.json"));
-            foreach (var tsConfigPath in tsConfigList)
-            {
-                var absPath = Path.GetFullPath(tsConfigPath);
-                AddTSCompiler(Path.GetDirectoryName(absPath));
-            }
+           InitTSDirectoryCollector();
         }
 
+        public static void InitTSDirectoryCollector()
+        {
+            try
+            {
+                var tsConfigList = AssetDatabase
+                    .FindAssets("tsconfig t:textAsset")
+                    .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                    .Where(path=> path.Contains("/tsconfig.json"));
+                foreach (var tsConfigPath in tsConfigList)
+                {
+                    var absPath = Path.GetFullPath(tsConfigPath);
+                    AddTSCompiler(Path.GetDirectoryName(absPath));
+                }
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogError("init Ts driectory collector failed");
+                UnityEngine.Debug.LogException(e);
+            }
+        }
+        
         public static string[] GetAllDirectoryAbsPath()
         {
             return tsCompilers.Keys.ToArray();

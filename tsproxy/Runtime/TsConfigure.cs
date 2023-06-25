@@ -40,6 +40,11 @@ namespace Typescript.Runtime
                     continue;
                 }
                 
+                if (assembly.IsDynamic)
+                {
+                    continue;
+                }
+                
                 Type[] types = assembly.GetTypes();
                 foreach (var type in types)
                 {
